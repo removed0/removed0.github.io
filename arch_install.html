@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+   <meta charset="utf-8">
+   <meta content="width=device-width, initial-scale=1" name="viewport">
+   <title>arch page</title>
+   <link href="https://raw.githubusercontent.com/removed0/removed0.github.io/main/media/favicon.ico" rel="shortcut icon">
+   <meta content="https://github.com/removed0/" name="author">
+   <meta content="im gonna install arch" name="description">
+</head>
+
+<body>
+   <pre>// download arch iso and arch iso pgp signature
+verify integrity: gpg --keyserver-options auto-key-retrieve --verify archlinux-&lt;version&gt;-x86_64.iso.sig
+put arch iso on usb: cat path/to/archlinux-version-x86_64.iso &gt; &lt;usb&gt; // Ex. /dev/sdb, make sure the usb isn't mounted
+
+// before installation disable secure boot and set the uefi/bios clock to utc
+
+ls /sys/firmware/efi/efivars
+// if it lists files it means you've booted in UEFI mode, which is good
+
+if you need to connect to wifi // better use wired
+{
+  iwctl
+  device list
+  station &lt;device&gt; scan
+  station &lt;device&gt; get-networks
+  station &lt;device&gt; connect &lt;network&gt;
+  exit 
+}
+
+ping archlinux.org // to stop press CTRL+C
+// if it doesn't work, fix it lmao
+timedatectl set-ntp true
+lsblk
+
+fdisk &lt;disk&gt;
+p
+if label not gpt
+{
+  g
+  w
+}
+q
+cfdisk &lt;disk&gt;
+partition 1. 512M, efi system
+partition 2. 8G, swap
+partition 3. rest of disk, linux filesystem
+
+lsblk
+mkfs.ext4 &lt;root_partition&gt; // Ex./dev/nvme0n1p3
+mkfs.fat -F 32 &lt;efi_partition&gt;
+mkswap &lt;swap_partition&gt;
+
+mount &lt;root_partition&gt; /mnt
+mount --mkdir &lt;efi_partition&gt; /mnt/boot
+swapon &lt;swap_partition&gt;
+
+pacman -Syy
+pacstrap -K /mnt base linux-zen linux-firmware linux-firmware-qlogic nano intel-ucode networkmanager
+genfstab -U /mnt &gt;&gt; /mnt/etc/fstab
+nano /mnt/etc/fstab
+{
+// general format: &lt;device&gt; &lt;dir&gt; &lt;type&gt; &lt;options&gt; &lt;dump&gt; &lt;fsck&gt;
+
+the root partition &lt;fsck&gt; should be 1, the rest 2 or 0
+options should have noatime, commit=20
+}
+
+arch-chroot /mnt
+
+// ln -sf /usr/share/zoneinfo/Europe/Bucharest /etc/localtime
+ln -sf /usr/share/zoneinfo/&lt;Region&gt;/&lt;City&gt; /etc/localtime
+hwclock --systohc 
+
+nano /etc/pacman.conf
+{
+  comment Checkspace
+  uncomment multilib
+  ParallelDownloads 4
+}
+
+systemctl enable NetworkManager.service
+
+uncomment en_US.UTF-8 UTF-8 in /etc/locale.gen
+locale-gen
+echo LANG=en_US.UTF-8 &gt; /etc/locale.conf
+
+echo &lt;hostname&gt; &gt; /etc/hostname
+
+nano /etc/hosts
+{
+127.0.0.1	localhost
+::1		localhost
+127.0.1.1	&lt;hostname&gt;
+}
+
+bootctl install
+systemctl --enable systemd-boot-update.service
+
+nano /boot/loader/entries/arch.conf
+{
+title   arch linux
+linux   /vmlinuz-linux-zen
+initrd  /initramfs-linux-zen.img
+initrd  /intel-ucode.img
+options root=&lt;root_partition&gt; rw mitigations=off // Ex. /dev/nvme0n1p3
+}
+
+nano /boot/loader/loader.conf // delete all
+{
+default arch
+timeout 3
+editor no
+}
+bootctl update
+
+tree /boot should kinda look like
+├── EFI
+│   ├── Boot
+│   │   └── BOOTX64.EFI
+│   └── systemd
+│       └── systemd-bootx64.efi
+├── initramfs-linux-zen-fallback.img
+├── initramfs-linux-zen.img
+├── loader
+│   ├── entries
+│   │   └── arch.conf
+│   └── loader.conf
+└── vmlinuz-linux-zen
+
+passwd
+exit
+reboot</pre>
+</body>
+
+</html>
