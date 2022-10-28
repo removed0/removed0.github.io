@@ -10,10 +10,9 @@
    <meta content="im gonna install arch" name="description">
 </head>
 
-<body>
+<body style="background-color: #202020; color: white;">
    <pre>// download arch iso and arch iso pgp signature
 verify integrity: gpg --keyserver-options auto-key-retrieve --verify archlinux-&lt;version&gt;-x86_64.iso.sig
-put arch iso on usb: cat path/to/archlinux-version-x86_64.iso &gt; &lt;usb&gt; // Ex. /dev/sdb, make sure the usb isn't mounted
 
 // before installation disable secure boot and set the uefi/bios clock to utc
 
@@ -58,26 +57,27 @@ mount --mkdir &lt;efi_partition&gt; /mnt/boot
 swapon &lt;swap_partition&gt;
 
 pacman -Syy
-pacstrap -K /mnt base linux-zen linux-firmware linux-firmware-qlogic nano intel-ucode networkmanager
+pacstrap -K /mnt base linux-zen linux-firmware linux-firmware-qlogic nano intel-ucode networkmanager mandoc
 genfstab -U /mnt &gt;&gt; /mnt/etc/fstab
 nano /mnt/etc/fstab
 {
 // general format: &lt;device&gt; &lt;dir&gt; &lt;type&gt; &lt;options&gt; &lt;dump&gt; &lt;fsck&gt;
 
 the root partition &lt;fsck&gt; should be 1, the rest 2 or 0
-options should have noatime, commit=20
+the root partition options should have noatime, commit=20
 }
 
 arch-chroot /mnt
 
 // ln -sf /usr/share/zoneinfo/Europe/Bucharest /etc/localtime
 ln -sf /usr/share/zoneinfo/&lt;Region&gt;/&lt;City&gt; /etc/localtime
-hwclock --systohc 
+hwclock -w
 
 nano /etc/pacman.conf
 {
   comment Checkspace
   uncomment multilib
+  uncomment Color
   ParallelDownloads 4
 }
 
@@ -99,13 +99,14 @@ nano /etc/hosts
 bootctl install
 systemctl --enable systemd-boot-update.service
 
+blkid &lt;root_partition&gt; // Ex. /dev/sda3
 nano /boot/loader/entries/arch.conf
 {
 title   arch linux
 linux   /vmlinuz-linux-zen
 initrd  /initramfs-linux-zen.img
 initrd  /intel-ucode.img
-options root=&lt;root_partition&gt; rw mitigations=off // Ex. /dev/nvme0n1p3
+options root=&lt;UUID&gt; rw // Ex. $UUID=UUID=6d3376e4-fc93-4509-95ec-a21d68011da2
 }
 
 nano /boot/loader/loader.conf // delete all
@@ -132,7 +133,55 @@ tree /boot should kinda look like
 
 passwd
 exit
-reboot</pre>
+reboot
+
+pacman -Syu opendoas // make sure sudo is not installed
+nano /etc/doas.conf
+{
+   permit :wheel
+   \n
+}
+chown -c root:root /etc/doas.conf
+chmod -c 0400 /etc/doas.conf
+
+ln -s $(which doas) /usr/bin/sudo
+
+useradd -m -G wheel &lt;username&gt;
+
+su &lt;username&gt;
+
+nano ~/.bashrc
+{
+   alias ls='ls --color=auto'
+   alias sudo='doas' 
+   alias sudoedit='doas rnano'
+}
+
+reboot
+
+sudo pacman -Syu git
+
+
+798787877 WIP 8977979009808789879898889889879879798797979070970980809 WIP
+sudo pacman -S --needed base-devel
+^24 // no sudo 
+git clone https://aur.archlinux.org/paru.git 
+cd paru 
+makepkg -si
+
+paru intel-media-driver vulkan-intel mesa libva-utils
+vainfo
+// if it doesn't work reboot and try again, if it still doesn't work add this to .bashrc
+{
+export LIBVA_DRIVER_NAME="iHD"
+}
+
+paru pipewire wireplumber pipewire-pulse pipewire-jack
+
+paru xorg-server 
+
+https://wiki.archlinux.org/title/General_recommendations
+</pre>
 </body>
 
 </html>
