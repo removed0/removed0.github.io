@@ -31,7 +31,7 @@ if you need to connect to wifi // better use wired
 
 ping archlinux.org // to stop press CTRL+C
 // if it doesn't work, fix it lmao
-timedatectl set-ntp true
+
 lsblk
 
 fdisk &lt;disk&gt;
@@ -41,7 +41,7 @@ if label not gpt
   g
   w
 }
-q
+
 cfdisk &lt;disk&gt;
 partition 1. 512M, efi system
 partition 2. 8G, swap
@@ -56,14 +56,13 @@ mount &lt;root_partition&gt; /mnt
 mount --mkdir &lt;efi_partition&gt; /mnt/boot
 swapon &lt;swap_partition&gt;
 
-pacman -Syy
-pacstrap -K /mnt base linux-zen linux-firmware linux-firmware-qlogic nano intel-ucode networkmanager mandoc
+pacstrap -K /mnt base linux-zen linux-firmware linux-firmware-qlogic nano intel-ucode networkmanager
 genfstab -U /mnt &gt;&gt; /mnt/etc/fstab
 nano /mnt/etc/fstab
 {
 // general format: &lt;device&gt; &lt;dir&gt; &lt;type&gt; &lt;options&gt; &lt;dump&gt; &lt;fsck&gt;
 
-the root partition &lt;fsck&gt; should be 1, the rest 2 or 0
+the root partition &lt;fsck&gt; should be 1, the other partition's &lt;fsck&gt; should be 2(after root check) or 0(disabled)
 the root partition options should have noatime, commit=20
 }
 
@@ -106,7 +105,7 @@ title   arch linux
 linux   /vmlinuz-linux-zen
 initrd  /initramfs-linux-zen.img
 initrd  /intel-ucode.img
-options root=&lt;UUID&gt; rw // Ex. $UUID=UUID=6d3376e4-fc93-4509-95ec-a21d68011da2
+options root=&lt;UUID&gt; rw // Ex. &lt;UUID&gt;=UUID=6d3376e4-fc93-4509-95ec-a21d68011da2
 }
 
 nano /boot/loader/loader.conf // delete all
@@ -156,29 +155,57 @@ nano ~/.bashrc
    alias sudo='doas' 
    alias sudoedit='doas rnano'
 }
+bash
 
-reboot
-
-sudo pacman -Syu git
-
-798787877 WIP 8977979009808789879898889889879879798797979070970980809 WIP BAD BEYOND THIS POINT ***
-
-sudo pacman -S --needed base-devel
+sudo pacman -Syu --needed git base-devel
 ^24 // no sudo 
 git clone https://aur.archlinux.org/paru.git 
 cd paru 
 makepkg -si
 
-paru intel-media-driver vulkan-intel mesa libva-utils
-vainfo
-// if it doesn't work reboot and try again, if it still doesn't work add this to .bashrc
+paru aic94xx-firmware upd72020x-fw wd719x-firmware
+if not run
 {
-export LIBVA_DRIVER_NAME="iHD"
+   mkinitcpio -P
+}
+reboot
+
+paru intel-media-driver vulkan-intel mesa libva-utils
+reboot
+
+vainfo
+// if it doesn't work add this to /etc/environment then reboot and try again
+{
+LIBVA_DRIVER_NAME=iHD
+}
+paru pipewire pipewire-pulse pipewire-jack wireplumber
+
+cp /usr/share/pipewire/client.conf /usr/share/pipewire/pipewire-pulse.conf /usr/share/pipewire/pipewire.conf ~/.config/pipewire/
+
+sudo nano ~/.config/pipewire/pipewire.conf
+{
+default.clock.allowed-rates = [ 44800 44100 ]
+
+on line 241  { path = "pactl" args = "load-module module-switch-on-connect" }
 }
 
-paru pipewire wireplumber pipewire-pulse pipewire-jack
+sudo nano ~/.config/pipewire/client.conf 
+{ 
+   resample.quality = 8
+}
 
-paru xorg-server 
+sudo nano ~/.config/pipewire/pipewire-pulse.conf 
+{ 
+   resample.quality = 8
+}
+
+paru mate mate-extras htop bluez
+mate ^14
+extras ^17
+
+systemctl --enable bluetooth.service
+
+paru code godot librewolf-bin transmission-gtk
 
 https://wiki.archlinux.org/title/General_recommendations
 </pre>
