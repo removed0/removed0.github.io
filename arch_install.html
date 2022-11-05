@@ -26,10 +26,6 @@
       a:hover {
          text-decoration: underline;
       }
-
-      a:active {
-         text-decoration: underline;
-      }
    </style>
 </head>
 
@@ -116,10 +112,11 @@ nano /etc/pacman.conf
       <summary>network (WIP)</summary>
       <pre>
 systemctl enable systemd-networkd systemd-resolved
+ip link
 nano /etc/systemd/network/20-wired.network 
 {
    [Match] 
-   Name=enp1s0 
+   Name=&lt;<i>wired interface</i>&gt; // Ex. enp1s0 
 
    [Network] 
    DHCP=yes
@@ -128,7 +125,7 @@ nano /etc/systemd/network/20-wired.network
 nano /etc/systemd/network/25-wireless.network 
 {
   [Match] 
-  Name=wlp2s0 
+  Name=&lt;<i>wireless interface</i>&gt; // Ex. wlp2s0 
 
   [Network] 
   DHCP=yes 
@@ -154,7 +151,11 @@ nano /etc/hosts
 </pre>
    </details>
    <pre>
-uncomment en_US.UTF-8 UTF-8 in /etc/locale.gen
+nano /etc/locale.gen
+{
+   uncomment en_US.UTF-8 UTF-8
+}
+
 locale-gen
 echo LANG=en_US.UTF-8 &gt; /etc/locale.conf
 
@@ -179,8 +180,7 @@ options root=&lt;<i>UUID</i>&gt; rw // &lt;<i>UUID</i>&gt; should look like: =UU
 nano /boot/loader/loader.conf // delete all
 {
 default arch
-timeout 3
-editor no
+// hold key during boot to open boot menu
 }
 bootctl update
 
@@ -205,6 +205,17 @@ tree /boot should kinda look like
 passwd
 exit
 reboot
+
+// always login as normal user
+
+if you need to connect to wifi
+{
+   iwctl device list 
+   station &lt;<i>device</i>&gt; scan 
+   station &lt;<i>device</i>&gt; get-networks 
+   station &lt;<i>device</i>&gt; connect &lt;<i>network</i>&gt; 
+   exit
+}
    </pre>
    <details>
       <summary>after install (WIP)</summary>
@@ -238,14 +249,12 @@ git clone https://aur.archlinux.org/paru.git
 cd paru 
 makepkg -si
 
-paru aic94xx-firmware upd72020x-fw wd719x-firmware
-if not run
-{
-   mkinitcpio -P
-}
-reboot
+paru aic94xx-firmware // weird bug if all on same line???
+paru upd72020x-fw 
+paru wd719x-firmware
+if mkinitcpio -P not run, run it
 
-// always login as normal user
+reboot
 
 paru intel-media-driver vulkan-intel mesa libva-utils
 reboot
@@ -282,10 +291,13 @@ sudo nano ~/.config/pipewire/pipewire-pulse.conf
 </pre>
       </details>
       <pre>
-   paru mate mate-extras htop bluez mate ^14 extras ^17 
-   systemctl enable bluetooth.service 
-   paru code godot librewolf-bin transmission-gtk 
-   https://wiki.archlinux.org/title/General_recommendations 
+paru mate mate-extra htop bluez 
+mate ^14 // no user guide
+mate-extra ^17 // no system monitor
+   
+systemctl enable bluetooth.service 
+paru code godot librewolf-bin transmission-gtk  
+<a href="https://wiki.archlinux.org/title/General_recommendations" rel="noreferrer noopener">General recommendations</a>
    </pre>
    </details>
 </body>
