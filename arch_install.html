@@ -8,68 +8,100 @@
    <link href="https://raw.githubusercontent.com/removed0/removed0.github.io/main/media/favicon.ico" rel="shortcut icon">
    <meta content="https://github.com/removed0/" name="author">
    <meta content="im gonna install arch" name="description">
+   <style>
+      details {
+         background-color: #303030;
+      }
+
+      a:link {
+         color: green;
+         text-decoration: none;
+      }
+
+      a:visited {
+         color: darkgreen;
+         text-decoration: none;
+      }
+
+      a:hover {
+         text-decoration: underline;
+      }
+
+      a:active {
+         text-decoration: underline;
+      }
+   </style>
 </head>
 
-<body style="background-color: #151515; color: white;">
-   <pre style="font-size: larger;">// download arch iso and arch iso pgp signature
-verify integrity: gpg --keyserver-options auto-key-retrieve --verify archlinux-&lt;version&gt;-x86_64.iso.sig
+<body style="background-color: #151515; color: white; font-size: larger;">
+   <h2>whole page is WIP</h2>
+   <details>
+      <summary>preinstallation</summary>
+      <pre>
+download the arch iso and the arch iso pgp signature from <a href="https://archlinux.org/download/" rel="noreferrer noopener">archlinux.org</a>
+      
+in the same directory as the iso and signature, verify integrity: 
+gpg --keyserver-options auto-key-retrieve --verify archlinux-&lt;<i>version</i>&gt;-x86_64.iso.sig
 
-// before installation disable secure boot and set the uefi/bios clock to utc
-
-ls /sys/firmware/efi/efivars
-// if it lists files it means you've booted in UEFI mode, which is good
-
+before installation disable secure boot and set the CMOS clock to UTC
+      </pre>
+   </details>
+   <pre>
+ls /sys/firmware/efi/efivars // if it lists files it means you've booted in UEFI mode, which is needed
+  
 if you need to connect to wifi // better use wired
 {
   iwctl
   device list
-  station &lt;device&gt; scan
-  station &lt;device&gt; get-networks
-  station &lt;device&gt; connect &lt;network&gt;
+  station &lt;<i>device</i>&gt; scan
+  station &lt;<i>device</i>&gt; get-networks
+  station &lt;<i>device</i>&gt; connect &lt;<i>network</i>&gt;
   exit 
 }
 
-ping archlinux.org // to stop press CTRL+C
+ping -c 5 archlinux.org
 // if it doesn't work, fix it lmao
 
 lsblk
 
-fdisk &lt;disk&gt;
+fdisk &lt;<i>disk</i>&gt;
 p
-if label not gpt
+if DiskLabel not gpt
 {
   g
   w
+} else {
+   q
 }
 
-cfdisk &lt;disk&gt;
+cfdisk &lt;<i>disk</i>&gt;
 partition 1. 512M, efi system
 partition 2. 8G, swap
 partition 3. rest of disk, linux filesystem
 
 lsblk
-mkfs.ext4 &lt;root_partition&gt; // Ex./dev/nvme0n1p3
-mkfs.fat -F 32 &lt;efi_partition&gt;
-mkswap &lt;swap_partition&gt;
+mkfs.ext4 &lt;<i>root_partition</i>&gt; // Ex./dev/nvme0n1p3
+mkfs.fat -F 32 &lt;<i>efi_partition</i>&gt;
+mkswap &lt;<i>swap_partition</i>&gt;
 
-mount &lt;root_partition&gt; /mnt
-mount --mkdir &lt;efi_partition&gt; /mnt/boot
-swapon &lt;swap_partition&gt;
+mount &lt;<i>root_partition</i>&gt; /mnt
+mount --mkdir &lt;<i>efi_partition</i>&gt; /mnt/boot
+swapon &lt;<i>swap_partition</i>&gt;
 
-pacstrap -K /mnt base linux-zen linux-firmware linux-firmware-qlogic nano intel-ucode networkmanager
+pacstrap -K /mnt base linux-zen linux-firmware linux-firmware-qlogic nano intel-ucode iwd
 genfstab -U /mnt &gt;&gt; /mnt/etc/fstab
 nano /mnt/etc/fstab
 {
-// general format: &lt;device&gt; &lt;dir&gt; &lt;type&gt; &lt;options&gt; &lt;dump&gt; &lt;fsck&gt;
+// general format: &lt;<i>device</i>&gt; &lt;<i>dir</i>&gt; &lt;<i>type</i>&gt; &lt;<i>options</i>&gt; &lt;<i>dump</i>&gt; &lt;<i>fsck</i>&gt;
 
-the root partition &lt;fsck&gt; should be 1, the other partition's &lt;fsck&gt; should be 2(after root check) or 0(disabled)
-the root partition options should have noatime, commit=20
+the root partition &lt;<i>fsck</i>&gt; should be 1, the other partition's &lt;<i>fsck</i>&gt; should be 2(after root check) or 0(disabled)
+the root partition &lt;<i>options</i>&gt; should have noatime, commit=20
 }
 
 arch-chroot /mnt
 
 // ln -sf /usr/share/zoneinfo/Europe/Bucharest /etc/localtime
-ln -sf /usr/share/zoneinfo/&lt;Region&gt;/&lt;City&gt; /etc/localtime
+ln -sf /usr/share/zoneinfo/&lt;<i>Region</i>&gt;/&lt;<i>City</i>&gt; /etc/localtime
 hwclock -w
 
 nano /etc/pacman.conf
@@ -79,33 +111,69 @@ nano /etc/pacman.conf
   uncomment Color
   ParallelDownloads 4
 }
+   </pre>
+   <details>
+      <summary>network (WIP)</summary>
+      <pre>
+systemctl enable systemd-networkd systemd-resolved
+nano /etc/systemd/network/20-wired.network 
+{
+   [Match] 
+   Name=enp1s0 
 
-systemctl enable NetworkManager.service
+   [Network] 
+   DHCP=yes
+}
 
+nano /etc/systemd/network/25-wireless.network 
+{
+  [Match] 
+  Name=wlp2s0 
+
+  [Network] 
+  DHCP=yes 
+  IgnoreCarrierLoss=3s
+}
+
+if boot time unusually long 
+{
+   nano /etc/systemd/system/systemd-networkd-wait-online.service.d/wait-for-only-one-interface.conf 
+   {
+   [Service] 
+   ExecStart=
+   ExecStart=/usr/lib/systemd/systemd-networkd-wait-online --any
+   }
+}
+
+nano /etc/hosts 
+{ 
+   127.0.0.1 localhost 
+   ::1 localhost 
+   127.0.1.1 &lt;<i>hostname</i>&gt; 
+}
+</pre>
+   </details>
+   <pre>
 uncomment en_US.UTF-8 UTF-8 in /etc/locale.gen
 locale-gen
 echo LANG=en_US.UTF-8 &gt; /etc/locale.conf
 
-echo &lt;hostname&gt; &gt; /etc/hostname
-
-nano /etc/hosts
-{
-127.0.0.1	localhost
-::1		localhost
-127.0.1.1	&lt;hostname&gt;
-}
-
+echo &lt;<i>hostname</i>&gt; &gt; /etc/hostname
+   </pre>
+   <details>
+      <summary>bootloader (WIP)</summary>
+      <pre>
 bootctl install
-systemctl --enable systemd-boot-update.service
+systemctl enable systemd-boot-update.service
 
-blkid &lt;root_partition&gt; // Ex. /dev/sda3
+blkid &lt;<i>root_partition</i>&gt; // Ex. /dev/sda3
 nano /boot/loader/entries/arch.conf
 {
 title   arch linux
 linux   /vmlinuz-linux-zen
 initrd  /initramfs-linux-zen.img
 initrd  /intel-ucode.img
-options root=&lt;UUID&gt; rw // Ex. &lt;UUID&gt;=UUID=6d3376e4-fc93-4509-95ec-a21d68011da2
+options root=&lt;<i>UUID</i>&gt; rw // &lt;<i>UUID</i>&gt; should look like: =UUID=6d3376e4-fc93-4509-95ec-a21d68011da2
 }
 
 nano /boot/loader/loader.conf // delete all
@@ -130,24 +198,31 @@ tree /boot should kinda look like
 │   └── loader.conf
 └── vmlinuz-linux-zen
 
+</pre>
+   </details>
+   <pre>
+
 passwd
 exit
 reboot
-
+   </pre>
+   <details>
+      <summary>after install (WIP)</summary>
+      <pre>
 pacman -Syu opendoas // make sure sudo is not installed
 nano /etc/doas.conf
 {
    permit :wheel
-   \n
+   // new line at the end
 }
 chown -c root:root /etc/doas.conf
 chmod -c 0400 /etc/doas.conf
 
 ln -s $(which doas) /usr/bin/sudo
 
-useradd -m -G wheel &lt;username&gt;
+useradd -m -G wheel &lt;<i>username</i>&gt;
 
-su &lt;username&gt;
+su &lt;<i>username</i>&gt;
 
 nano ~/.bashrc
 {
@@ -170,6 +245,8 @@ if not run
 }
 reboot
 
+// always login as normal user
+
 paru intel-media-driver vulkan-intel mesa libva-utils
 reboot
 
@@ -178,6 +255,10 @@ vainfo
 {
 LIBVA_DRIVER_NAME=iHD
 }
+   </pre>
+      <details style="background-color: #204020;">
+         <summary>audio (WIP)</summary>
+         <pre>
 paru pipewire pipewire-pulse pipewire-jack wireplumber
 
 cp /usr/share/pipewire/client.conf /usr/share/pipewire/pipewire-pulse.conf /usr/share/pipewire/pipewire.conf ~/.config/pipewire/
@@ -198,17 +279,15 @@ sudo nano ~/.config/pipewire/pipewire-pulse.conf
 { 
    resample.quality = 8
 }
-
-paru mate mate-extras htop bluez
-mate ^14
-extras ^17
-
-systemctl --enable bluetooth.service
-
-paru code godot librewolf-bin transmission-gtk
-
-https://wiki.archlinux.org/title/General_recommendations
 </pre>
+      </details>
+      <pre>
+   paru mate mate-extras htop bluez mate ^14 extras ^17 
+   systemctl enable bluetooth.service 
+   paru code godot librewolf-bin transmission-gtk 
+   https://wiki.archlinux.org/title/General_recommendations 
+   </pre>
+   </details>
 </body>
 
 </html>
