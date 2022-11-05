@@ -10,7 +10,11 @@
    <meta content="im gonna install arch" name="description">
    <style>
       details {
-         background-color: #303030;
+         padding-left: 2px;
+         border-style: solid;
+         border-color: lightgray;
+         border-radius: 3px;
+         border-width: 2px;
       }
 
       a:link {
@@ -55,7 +59,7 @@ if you need to connect to wifi // better use wired
   exit 
 }
 
-ping -c 5 archlinux.org
+ping -c4 archlinux.org
 // if it doesn't work, fix it lmao
 
 lsblk
@@ -71,13 +75,14 @@ if DiskLabel not gpt
 }
 
 cfdisk &lt;<i>disk</i>&gt;
+// no other partitions
 partition 1. 512M, efi system
 partition 2. 8G, swap
 partition 3. rest of disk, linux filesystem
 
 lsblk
 mkfs.ext4 &lt;<i>root_partition</i>&gt; // Ex./dev/nvme0n1p3
-mkfs.fat -F 32 &lt;<i>efi_partition</i>&gt;
+mkfs.fat -F32 &lt;<i>efi_partition</i>&gt;
 mkswap &lt;<i>swap_partition</i>&gt;
 
 mount &lt;<i>root_partition</i>&gt; /mnt
@@ -256,7 +261,10 @@ if mkinitcpio -P not run, run it
 
 reboot
 
-paru intel-media-driver vulkan-intel mesa libva-utils
+paru intel-media-driver 
+paru vulkan-intel 
+paru mesa 
+paru libva-utils
 reboot
 
 vainfo
@@ -265,7 +273,7 @@ vainfo
 LIBVA_DRIVER_NAME=iHD
 }
    </pre>
-      <details style="background-color: #204020;">
+      <details>
          <summary>audio (WIP)</summary>
          <pre>
 paru pipewire pipewire-pulse pipewire-jack wireplumber
