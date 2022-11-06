@@ -89,7 +89,7 @@ mount &lt;<i>root_partition</i>&gt; /mnt
 mount --mkdir &lt;<i>efi_partition</i>&gt; /mnt/boot
 swapon &lt;<i>swap_partition</i>&gt;
 
-pacstrap -K /mnt base linux-zen linux-firmware linux-firmware-qlogic nano intel-ucode iwd
+pacstrap -K /mnt base linux-zen linux-firmware linux-firmware-qlogic nano intel-ucode networkmanager
 genfstab -U /mnt &gt;&gt; /mnt/etc/fstab
 nano /mnt/etc/fstab
 {
@@ -116,43 +116,8 @@ nano /etc/pacman.conf
    <details>
       <summary>network (WIP)</summary>
       <pre>
-systemctl enable systemd-networkd systemd-resolved
-ip link
-nano /etc/systemd/network/20-wired.network 
-{
-   [Match] 
-   Name=&lt;<i>wired interface</i>&gt; // Ex. enp1s0 
+systemctl enable NetworkManager.service
 
-   [Network] 
-   DHCP=yes
-}
-
-nano /etc/systemd/network/25-wireless.network 
-{
-  [Match] 
-  Name=&lt;<i>wireless interface</i>&gt; // Ex. wlp2s0 
-
-  [Network] 
-  DHCP=yes 
-  IgnoreCarrierLoss=3s
-}
-
-if boot time unusually long 
-{
-   nano /etc/systemd/system/systemd-networkd-wait-online.service.d/wait-for-only-one-interface.conf 
-   {
-   [Service] 
-   ExecStart=
-   ExecStart=/usr/lib/systemd/systemd-networkd-wait-online --any
-   }
-}
-
-nano /etc/hosts 
-{ 
-   127.0.0.1 localhost 
-   ::1 localhost 
-   127.0.1.1 &lt;<i>hostname</i>&gt; 
-}
 </pre>
    </details>
    <pre>
@@ -263,7 +228,7 @@ reboot
 
 paru intel-media-driver 
 paru vulkan-intel 
-paru mesa 
+paru mesa
 paru libva-utils
 reboot
 
@@ -299,7 +264,7 @@ sudo nano ~/.config/pipewire/pipewire-pulse.conf
 </pre>
       </details>
       <pre>
-paru mate mate-extra htop bluez 
+paru mate mate-extra htop bluez network-manager-applet
 mate ^14 // no user guide
 mate-extra ^17 // no system monitor
    
