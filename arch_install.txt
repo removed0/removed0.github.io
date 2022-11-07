@@ -1,0 +1,221 @@
+whole page is WIP
+  preinstallation
+
+download the arch iso and the arch iso pgp signature from archlinux.org
+      
+in the same directory as the iso and signature, verify integrity: 
+gpg --keyserver-options auto-key-retrieve --verify archlinux-<version>-x86_64.iso.sig
+
+before installation disable secure boot and set the CMOS clock to UTC
+
+ls /sys/firmware/efi/efivars // if it lists files it means you've booted in UEFI mode, which is needed
+  
+if you need to connect to wifi // better use wired
+{
+  iwctl
+  device list
+  station <device> scan
+  station <device> get-networks
+  station <device> connect <network>
+  exit 
+}
+
+ping -c4 archlinux.org
+// if it doesn't work, fix it lmao
+
+lsblk
+
+fdisk <disk>
+p
+if DiskLabel not gpt
+{
+  g
+  w
+} else {
+   q
+}
+
+cfdisk <disk>
+// no other partitions
+partition 1. 512M, efi system
+partition 2. 8G, swap
+partition 3. rest of disk, linux filesystem
+
+lsblk
+mkfs.ext4 <root_partition> // Ex./dev/nvme0n1p3
+mkfs.fat -F32 <efi_partition>
+mkswap <swap_partition>
+
+mount <root_partition> /mnt
+mount --mkdir <efi_partition> /mnt/boot
+swapon <swap_partition>
+
+pacstrap -K /mnt base linux-zen linux-firmware linux-firmware-qlogic nano intel-ucode networkmanager
+genfstab -U /mnt >> /mnt/etc/fstab
+nano /mnt/etc/fstab
+{
+// general format: <device> <dir> <type> <options> <dump> <fsck>
+
+the root partition <fsck> should be 1, the other partition's <fsck> should be 2(after root check) or 0(disabled)
+the root partition <options> should have noatime, commit=20
+}
+
+arch-chroot /mnt
+
+// ln -sf /usr/share/zoneinfo/Europe/Bucharest /etc/localtime
+ln -sf /usr/share/zoneinfo/<Region>/<City> /etc/localtime
+hwclock -w
+
+nano /etc/pacman.conf
+{
+  comment Checkspace
+  uncomment multilib
+  uncomment Color
+  ParallelDownloads 4
+}
+  network (WIP)
+     
+systemctl enable NetworkManager.service
+
+nano /etc/locale.gen
+{
+   uncomment en_US.UTF-8 UTF-8
+}
+
+locale-gen
+echo LANG=en_US.UTF-8 > /etc/locale.conf
+
+echo <hostname> > /etc/hostname // got here
+  bootloader (WIP)
+
+bootctl install
+systemctl enable systemd-boot-update.service
+
+blkid <root_partition> // Ex. /dev/sda3
+nano /boot/loader/entries/arch.conf
+{
+title   arch linux
+linux   /vmlinuz-linux-zen
+initrd  /initramfs-linux-zen.img
+initrd  /intel-ucode.img
+options root=<UUID> rw // <UUID> should look like: =UUID=6d3376e4-fc93-4509-95ec-a21d68011da2
+}
+
+nano /boot/loader/loader.conf // delete all
+{
+default arch
+// hold key during boot to open boot menu
+}
+
+tree /boot should kinda look like
+├── EFI
+│   ├── Boot
+│   │   └── BOOTX64.EFI
+│   └── systemd
+│       └── systemd-bootx64.efi
+├── initramfs-linux-zen-fallback.img
+├── initramfs-linux-zen.img
+├── loader
+│   ├── entries
+│   │   └── arch.conf
+│   └── loader.conf
+└── vmlinuz-linux-zen
+
+passwd
+exit
+reboot
+
+// always login as normal user
+
+if you need to connect to wifi
+{
+   iwctl device list 
+   station <device> scan 
+   station <device> get-networks 
+   station <device> connect <network> 
+   exit
+}
+  after install (WIP)
+
+pacman -Syu opendoas // make sure sudo is not installed
+nano /etc/doas.conf
+{
+   permit :wheel
+   // new line at the end
+}
+chown -c root:root /etc/doas.conf
+chmod -c 0400 /etc/doas.conf
+
+ln -s $(which doas) /usr/bin/sudo
+
+useradd -m -G wheel <username>
+
+passwd <username>
+su <username>
+
+nano ~/.bashrc
+{
+   alias cd..='cd ..'
+   alias cd....='cd ../..'
+   alias cd ....='cd ../..'
+   alias ls='ls --color=auto'
+   alias sudo='doas' 
+   alias sudoedit='doas rnano'
+}
+bash
+
+sudo pacman -Syu --needed git base-devel
+^24 // no sudo 
+git clone https://aur.archlinux.org/paru.git 
+cd paru 
+makepkg -si
+
+paru aic94xx-firmware // weird bug if all on same line??? *maybe*
+paru upd72020x-fw 
+paru wd719x-firmware
+if mkinitcpio -P not run, run it
+
+reboot
+
+paru intel-media-driver 
+paru vulkan-intel 
+paru mesa
+paru libva-utils
+reboot
+
+vainfo
+// if it doesn't work add this to /etc/environment then reboot and try again
+{
+LIBVA_DRIVER_NAME=iHD
+}
+  audio (WIP)
+
+paru pipewire pipewire-pulse pipewire-jack wireplumber
+
+cp /usr/share/pipewire/client.conf /usr/share/pipewire/pipewire-pulse.conf /usr/share/pipewire/pipewire.conf ~/.config/pipewire/
+
+sudo nano ~/.config/pipewire/pipewire.conf
+{
+default.clock.allowed-rates = [ 44800 44100 ]
+
+on line 241  { path = "pactl" args = "load-module module-switch-on-connect" }
+}
+
+sudo nano ~/.config/pipewire/client.conf 
+{ 
+   resample.quality = 8
+}
+
+sudo nano ~/.config/pipewire/pipewire-pulse.conf 
+{ 
+   resample.quality = 8
+}
+
+paru mate mate-extra htop bluez network-manager-applet
+mate ^14 // no user guide
+mate-extra ^17 // no system monitor
+   
+systemctl enable bluetooth.service 
+paru code godot librewolf-bin transmission-gtk
+
+https://wiki.archlinux.org/title/General_recommendations
