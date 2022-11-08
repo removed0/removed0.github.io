@@ -154,20 +154,6 @@ default arch
 }
 bootctl update
 
-tree /boot should kinda look like
-├── EFI
-│   ├── Boot
-│   │   └── BOOTX64.EFI
-│   └── systemd
-│       └── systemd-bootx64.efi
-├── initramfs-linux-zen-fallback.img
-├── initramfs-linux-zen.img
-├── loader
-│   ├── entries
-│   │   └── arch.conf
-│   └── loader.conf
-└── vmlinuz-linux-zen
-
 </pre>
    </details>
    <pre>
@@ -203,10 +189,14 @@ ln -s $(which doas) /usr/bin/sudo
 
 useradd -m -G wheel &lt;<i>username</i>&gt;
 
+passwd &lt;<i>username</i>&gt;
 su &lt;<i>username</i>&gt;
 
 nano ~/.bashrc
 {
+   alias cd..='cd ..' 
+   alias cd....='cd ../..' 
+   alias cd ....='cd ../..'
    alias ls='ls --color=auto'
    alias sudo='doas' 
    alias sudoedit='doas rnano'
