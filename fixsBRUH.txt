@@ -617,15 +617,11 @@ do more things
 _i want to die_
 display manager 
 install xorg
-quicker way to copy files to home dir (pipewire)
-in general quicker way to do stuff
 mate vs xfce // damn // maybe offer both
 too much bloat // lmao
-doas syslink vs bash alias
 pace is all fucked up
 bluetooth?
 local network file sharing?
-why is paru all fucked up
 https://soundcloud.com/removed0 plug // technoblade :sad:
 also like mention that this "guide" IS NOT A GUIDE LMAO
 add instructions for people to follow along // lynx in other tty
