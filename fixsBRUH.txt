@@ -615,16 +615,13 @@ Package Cache Size:
 keyboard binds for volume, pause music and stuff
 do more things
 _i want to die_
-mention mount order
-display manager
+display manager 
 install xorg
-cd into home dir
 quicker way to copy files to home dir (pipewire)
 in general quicker way to do stuff
 mate vs xfce // damn // maybe offer both
 too much bloat // lmao
 doas syslink vs bash alias
-// always login as normal user????
 pace is all fucked up
 bluetooth?
 local network file sharing?

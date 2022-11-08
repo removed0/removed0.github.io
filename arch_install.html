@@ -85,7 +85,7 @@ mkfs.ext4 &lt;<i>root_partition</i>&gt; // Ex./dev/nvme0n1p3
 mkfs.fat -F32 &lt;<i>efi_partition</i>&gt;
 mkswap &lt;<i>swap_partition</i>&gt;
 
-mount &lt;<i>root_partition</i>&gt; /mnt
+mount &lt;<i>root_partition</i>&gt; /mnt // YOU MUST MOUNT THIS FIRST
 mount --mkdir &lt;<i>efi_partition</i>&gt; /mnt/boot
 swapon &lt;<i>swap_partition</i>&gt;
 
@@ -107,20 +107,14 @@ hwclock -w
 
 nano /etc/pacman.conf
 {
-  comment Checkspace
+  comment Checkspace // if you have enough space
   uncomment multilib
   uncomment Color
   ParallelDownloads 4
 }
-   </pre>
-   <details>
-      <summary>network (WIP)</summary>
-      <pre>
-systemctl enable NetworkManager.service
 
-</pre>
-   </details>
-   <pre>
+systemctl enable NetworkManager
+
 nano /etc/locale.gen
 {
    uncomment en_US.UTF-8 UTF-8
@@ -135,7 +129,7 @@ echo &lt;<i>hostname</i>&gt; &gt; /etc/hostname
       <summary>bootloader (WIP)</summary>
       <pre>
 bootctl install
-systemctl enable systemd-boot-update.service
+systemctl enable systemd-boot-update
 
 blkid &lt;<i>root_partition</i>&gt; // Ex. /dev/sda3
 nano /boot/loader/entries/arch.conf
@@ -147,22 +141,17 @@ initrd  /intel-ucode.img
 options root=&lt;<i>UUID</i>&gt; rw // &lt;<i>UUID</i>&gt; should look like: =UUID=6d3376e4-fc93-4509-95ec-a21d68011da2
 }
 
-nano /boot/loader/loader.conf // delete all
-{
-default arch
-// hold key during boot to open boot menu
-}
+echo default arch > /boot/loader/loader.conf
+
 bootctl update
 
 </pre>
    </details>
    <pre>
 
-passwd
+passwd // set root password
 exit
 reboot
-
-// always login as normal user
 
 if you need to connect to wifi
 {
@@ -177,31 +166,26 @@ if you need to connect to wifi
       <summary>after install (WIP)</summary>
       <pre>
 pacman -Syu opendoas // make sure sudo is not installed
-nano /etc/doas.conf
-{
-   permit :wheel
-   // new line at the end
-}
+echo -e 'permit :wheel\n' > /etc/doas.conf
+
 chown -c root:root /etc/doas.conf
 chmod -c 0400 /etc/doas.conf
 
 ln -s $(which doas) /usr/bin/sudo
 
 useradd -m -G wheel &lt;<i>username</i>&gt;
-
 passwd &lt;<i>username</i>&gt;
 su &lt;<i>username</i>&gt;
 
-nano ~/.bashrc
+cd ~
+nano .bashrc
 {
    alias cd..='cd ..' 
    alias cd....='cd ../..' 
    alias cd ....='cd ../..'
    alias ls='ls --color=auto'
-   alias sudo='doas' 
-   alias sudoedit='doas rnano'
 }
-bash
+// run bash to apply
 
 sudo pacman -Syu --needed git base-devel
 ^24 // no sudo 
@@ -209,17 +193,17 @@ git clone https://aur.archlinux.org/paru.git
 cd paru 
 makepkg -si
 
-paru aic94xx-firmware // weird bug if all on same line???
+paru aic94xx-firmware // weird bug if all on same line??? PARU HAS ISSUE WITH MINUS SIGN IN NAME.
 paru upd72020x-fw 
 paru wd719x-firmware
 if mkinitcpio -P not run, run it
 
+// login as normal user
 reboot
 
 paru intel-media-driver 
 paru vulkan-intel 
-paru mesa
-paru libva-utils
+paru mesa libva-utils
 reboot
 
 vainfo
@@ -231,9 +215,10 @@ LIBVA_DRIVER_NAME=iHD
       <details>
          <summary>audio (WIP)</summary>
          <pre>
-paru pipewire pipewire-pulse pipewire-jack wireplumber
+paru pipewire wireplumber 
+paru pipewire-{pulse,jack}
 
-cp /usr/share/pipewire/client.conf /usr/share/pipewire/pipewire-pulse.conf /usr/share/pipewire/pipewire.conf ~/.config/pipewire/
+cp /usr/share/pipewire/{client.conf,pipewire-pulse.conf,pipewire.conf} ~/.config/pipewire/
 
 sudo nano ~/.config/pipewire/pipewire.conf
 {
@@ -258,8 +243,9 @@ paru mate mate-extra htop bluez network-manager-applet
 mate ^14 // no user guide
 mate-extra ^17 // no system monitor
    
-systemctl enable bluetooth.service 
-paru code godot librewolf-bin transmission-gtk  
+systemctl enable bluetooth
+paru code godot librewolf-bin 
+paru transmission-gtk  
 <a href="https://wiki.archlinux.org/title/General_recommendations" rel="noreferrer noopener">General recommendations</a>
    </pre>
    </details>
