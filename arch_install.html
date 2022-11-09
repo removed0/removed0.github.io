@@ -23,7 +23,7 @@
       }
 
       a:visited {
-         color: darkgreen;
+         color: rgb(20, 95, 20);
          text-decoration: none;
       }
 
@@ -85,8 +85,8 @@ pacstrap -K /mnt base linux-zen linux-firmware linux-firmware-qlogic nano intel-
 genfstab -U /mnt &gt;&gt; /mnt/etc/fstab
 nano /mnt/etc/fstab
 {
-the root partition &lt;<i>pass</i>&gt; should be 1, the other partition's &lt;<i>pass</i>&gt; should be 2(after root check) or 0(disabled)
-the root partition &lt;<i>options</i>&gt; should have noatime, commit=20
+   the root partition &lt;<i>pass</i>&gt; should be 1, the other partition's &lt;<i>pass</i>&gt; should be 2(after root check) or 0(disabled)
+   the root partition &lt;<i>options</i>&gt; should have noatime, commit=20
 }
 
 arch-chroot /mnt
@@ -124,14 +124,14 @@ systemctl enable systemd-boot-update
 blkid &lt;<i>root_partition</i>&gt; // Ex. /dev/sda3
 nano /boot/loader/entries/arch.conf
 {
-title   arch linux
-linux   /vmlinuz-linux-zen
-initrd  /initramfs-linux-zen.img
-initrd  /intel-ucode.img
-options root=&lt;<i>UUID</i>&gt; rw // &lt;<i>UUID</i>&gt; should look like: =UUID=6d3376e4-fc93-4509-95ec-a21d68011da2
+   title   arch linux
+   linux   /vmlinuz-linux-zen
+   initrd  /initramfs-linux-zen.img
+   initrd  /intel-ucode.img
+   options root=&lt;<i>UUID</i>&gt; rw // &lt;<i>UUID</i>&gt; should look like: =UUID=6d3376e4-fc93-4509-95ec-a21d68011da2 // add mitigations=off if performance yes but security no
 }
 
-echo default arch > /boot/loader/loader.conf
+echo default arch &gt; /boot/loader/loader.conf
 
 </pre>
    </details>
@@ -141,14 +141,10 @@ passwd // set root password
 exit
 reboot
 
-if you need to connect to wifi
-{
-   iwctl device list 
-   station &lt;<i>device</i>&gt; scan 
-   station &lt;<i>device</i>&gt; get-networks 
-   station &lt;<i>device</i>&gt; connect &lt;<i>network</i>&gt; 
-   exit
+if you need wifi{
+nmtui
 }
+
    </pre>
    <details>
       <summary>after install (WIP)</summary>
@@ -156,8 +152,8 @@ if you need to connect to wifi
 pacman -Syu opendoas which // make sure sudo is not installed
 nano /etc/doas.conf
 {
-permit :wheel
-permit setenv { XAUTHORITY LANG LC_ALL } :wheel
+   permit :wheel
+   permit setenv { XAUTHORITY LANG LC_ALL } :wheel
 
 }
 
@@ -166,8 +162,8 @@ chmod -c 0400 /etc/doas.conf
 
 nano /etc/environment
 {
-sudo="doas"
-sudoedit="doas rnano"
+   sudo="doas"
+   sudoedit="doas rnano"
 }
 
 useradd -m -G wheel &lt;<i>username</i>&gt;
@@ -183,6 +179,7 @@ nano .bashrc
    alias cd ....='cd ../..'
    alias ls='ls --color=auto'
 }
+// always login as normal user
 reboot
 
 sudo pacman -Syu --needed git base-devel rustup
@@ -191,25 +188,25 @@ git clone https://aur.archlinux.org/paru.git
 rustup default stable
 cd paru
 makepkg -si
+sudo nano /etc/paru.conf
+{
+   Limit=80
+}
 
 paru aic94xx-firmware // weird bug if all on same line??? PARU HAS ISSUE WITH MINUS SIGN IN NAME.
 paru upd72020x-fw
 paru wd719x-firmware
 if mkinitcpio -P not run, run it
 
-// login as normal user
 reboot
 
-paru intel-media-driver 
-paru vulkan-intel 
-paru mesa 
-paru libva-utils
+sudo pacman -Syu intel-media-driver vulkan-intel mesa libva-utils
 reboot
 
 vainfo
 // if it doesn't work add this to /etc/environment then reboot and try again
 {
-LIBVA_DRIVER_NAME=iHD
+   LIBVA_DRIVER_NAME=iHD
 }
    </pre>
       <details>
@@ -221,9 +218,9 @@ cp /usr/share/pipewire/{client,pipewire-pulse,pipewire}.conf ~/.config/pipewire/
 
 sudo nano ~/.config/pipewire/pipewire.conf
 {
-default.clock.allowed-rates = [ 44800 44100 ]
+   default.clock.allowed-rates = [ 44800 44100 ]
 
-on line 241  { path = "pactl" args = "load-module module-switch-on-connect" }
+   on line 241 add: { path = "pactl" args = "load-module module-switch-on-connect" }
 }
 
 sudo nano ~/.config/pipewire/client.conf 
@@ -238,13 +235,22 @@ sudo nano ~/.config/pipewire/pipewire-pulse.conf
 </pre>
       </details>
       <pre>
-sudo pacman -Syu xorg-server xorg-xinit mate mate-extra htop bluez code network-manager-applet transmission-gtk
-mate ^14 // no user guide
-mate-extra ^17 // no system monitor
-nano ~/.xinitrc
-{
-    startxfce4
+sudo pacman -Syu xorg-server xorg-xinit xfce4 xfce4-goodies htop bluez code network-manager-applet transmission-gtk
+xfce ^14 // no user guide
+xfce-goodies ^30 // no task manager
+
+nano ~/.xinitrc 
+{ 
+   startxfce4 
 }
+
+nano ~/.bash_profile
+{
+   if [ -z "${DISPLAY}" ] && [ "${XDG_VTNR}" -eq 1 ]; then 
+   exec startx 
+   fi
+}
+
 sudo nano /etc/systemd/system/getty@tty1.service.d/autologin.conf
 {
    Environment=XDG_SESSION_TYPE=x11
@@ -254,7 +260,6 @@ sudo nano /etc/systemd/system/getty@tty1.service.d/autologin.conf
    ExecStart=-/sbin/agetty -o '-p -f -- \\u' --noclear --autologin username %I $TERM
 } 
 
- 
 paru librewolf-bin 
 <a href="https://wiki.archlinux.org/title/General_recommendations" rel="noreferrer noopener">General recommendations</a>
    </pre>
