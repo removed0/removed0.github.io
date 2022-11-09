@@ -143,8 +143,6 @@ options root=&lt;<i>UUID</i>&gt; rw // &lt;<i>UUID</i>&gt; should look like: =UU
 
 echo default arch > /boot/loader/loader.conf
 
-bootctl update
-
 </pre>
    </details>
    <pre>
@@ -187,10 +185,11 @@ nano .bashrc
 }
 // run bash to apply
 
-sudo pacman -Syu --needed git base-devel
+sudo pacman -Syu --needed git base-devel rustup
 ^24 // no sudo 
 git clone https://aur.archlinux.org/paru.git 
-cd paru 
+cd paru
+rustup default stable
 makepkg -si
 
 paru aic94xx-firmware // weird bug if all on same line??? PARU HAS ISSUE WITH MINUS SIGN IN NAME.
@@ -203,7 +202,8 @@ reboot
 
 paru intel-media-driver 
 paru vulkan-intel 
-paru mesa libva-utils
+paru mesa 
+paru libva-utils
 reboot
 
 vainfo
@@ -216,9 +216,9 @@ LIBVA_DRIVER_NAME=iHD
          <summary>audio (WIP)</summary>
          <pre>
 paru pipewire wireplumber 
-paru pipewire-{pulse,jack}
+sudo pacman -Syu pipewire-{pulse,jack}
 
-cp /usr/share/pipewire/{client.conf,pipewire-pulse.conf,pipewire.conf} ~/.config/pipewire/
+cp /usr/share/pipewire/{client,pipewire-pulse,pipewire}.conf ~/.config/pipewire/
 
 sudo nano ~/.config/pipewire/pipewire.conf
 {
@@ -244,7 +244,8 @@ mate ^14 // no user guide
 mate-extra ^17 // no system monitor
    
 systemctl enable bluetooth
-paru code godot librewolf-bin 
+paru code godot 
+paru librewolf-bin 
 paru transmission-gtk  
 <a href="https://wiki.archlinux.org/title/General_recommendations" rel="noreferrer noopener">General recommendations</a>
    </pre>
