@@ -59,23 +59,15 @@ if you need to connect to wifi // better use wired
   exit 
 }
 
-ping -c4 archlinux.org
-// if it doesn't work, fix it lmao
+ping -c4 archlinux.org // if it doesn't work, fix it lmao
 
 lsblk
 
 fdisk &lt;<i>disk</i>&gt;
-p
-if DiskLabel not gpt
-{
-  g
-  w
-} else {
-   q
-}
+g
+w
 
 cfdisk &lt;<i>disk</i>&gt;
-// no other partitions
 partition 1. 512M, efi system
 partition 2. 8G, swap
 partition 3. rest of disk, linux filesystem
@@ -93,9 +85,7 @@ pacstrap -K /mnt base linux-zen linux-firmware linux-firmware-qlogic nano intel-
 genfstab -U /mnt &gt;&gt; /mnt/etc/fstab
 nano /mnt/etc/fstab
 {
-// general format: &lt;<i>device</i>&gt; &lt;<i>dir</i>&gt; &lt;<i>type</i>&gt; &lt;<i>options</i>&gt; &lt;<i>dump</i>&gt; &lt;<i>fsck</i>&gt;
-
-the root partition &lt;<i>fsck</i>&gt; should be 1, the other partition's &lt;<i>fsck</i>&gt; should be 2(after root check) or 0(disabled)
+the root partition &lt;<i>pass</i>&gt; should be 1, the other partition's &lt;<i>pass</i>&gt; should be 2(after root check) or 0(disabled)
 the root partition &lt;<i>options</i>&gt; should have noatime, commit=20
 }
 
@@ -163,13 +153,22 @@ if you need to connect to wifi
    <details>
       <summary>after install (WIP)</summary>
       <pre>
-pacman -Syu opendoas // make sure sudo is not installed
-echo -e 'permit :wheel\n' > /etc/doas.conf
+pacman -Syu opendoas which // make sure sudo is not installed
+nano /etc/doas.conf
+{
+permit :wheel
+permit setenv { XAUTHORITY LANG LC_ALL } :wheel
+
+}
 
 chown -c root:root /etc/doas.conf
 chmod -c 0400 /etc/doas.conf
 
-ln -s $(which doas) /usr/bin/sudo
+nano /etc/environment
+{
+sudo="doas"
+sudoedit="doas rnano"
+}
 
 useradd -m -G wheel &lt;<i>username</i>&gt;
 passwd &lt;<i>username</i>&gt;
@@ -178,22 +177,23 @@ su &lt;<i>username</i>&gt;
 cd ~
 nano .bashrc
 {
+   complete -cf doas
    alias cd..='cd ..' 
    alias cd....='cd ../..' 
    alias cd ....='cd ../..'
    alias ls='ls --color=auto'
 }
-// run bash to apply
+reboot
 
 sudo pacman -Syu --needed git base-devel rustup
 ^24 // no sudo 
 git clone https://aur.archlinux.org/paru.git 
-cd paru
 rustup default stable
+cd paru
 makepkg -si
 
 paru aic94xx-firmware // weird bug if all on same line??? PARU HAS ISSUE WITH MINUS SIGN IN NAME.
-paru upd72020x-fw 
+paru upd72020x-fw
 paru wd719x-firmware
 if mkinitcpio -P not run, run it
 
@@ -215,8 +215,7 @@ LIBVA_DRIVER_NAME=iHD
       <details>
          <summary>audio (WIP)</summary>
          <pre>
-paru pipewire wireplumber 
-sudo pacman -Syu pipewire-{pulse,jack}
+sudo pacman -Syu pipewire pipewire-{pulse,jack}
 
 cp /usr/share/pipewire/{client,pipewire-pulse,pipewire}.conf ~/.config/pipewire/
 
@@ -239,14 +238,24 @@ sudo nano ~/.config/pipewire/pipewire-pulse.conf
 </pre>
       </details>
       <pre>
-paru mate mate-extra htop bluez network-manager-applet
+sudo pacman -Syu xorg-server xorg-xinit mate mate-extra htop bluez code network-manager-applet transmission-gtk
 mate ^14 // no user guide
 mate-extra ^17 // no system monitor
-   
-systemctl enable bluetooth
-paru code godot 
+nano ~/.xinitrc
+{
+    startxfce4
+}
+sudo nano /etc/systemd/system/getty@tty1.service.d/autologin.conf
+{
+   Environment=XDG_SESSION_TYPE=x11
+   Type=simple
+   [Service]
+   ExecStart=
+   ExecStart=-/sbin/agetty -o '-p -f -- \\u' --noclear --autologin username %I $TERM
+} 
+
+ 
 paru librewolf-bin 
-paru transmission-gtk  
 <a href="https://wiki.archlinux.org/title/General_recommendations" rel="noreferrer noopener">General recommendations</a>
    </pre>
    </details>
