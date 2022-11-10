@@ -137,7 +137,7 @@ nano /boot/loader/entries/arch.conf
    options root=&lt;<i>UUID</i>&gt; rw nowatchdog // &lt;<i>UUID</i>&gt; should look like: UUID=6d3376e4-fc93-4509-95ec-a21d68011da2 // add mitigations=off if you want to trade security for performance
 }
 
- echo default arch &gt; /boot/loader/loader.conf
+echo default arch &gt; /boot/loader/loader.conf
       </pre>
 	</details>
 	<pre>
@@ -148,14 +148,14 @@ reboot
 
 nano /etc/NetworkManager/NetworkManager.conf
 {
-	[connection] 
-	ipv6.ip6-privacy=2
+   [connection] 
+   ipv6.ip6-privacy=2
 }
 
 nano /etc/NetworkManager/dnsmasq.d/dnssec.conf // might cause breakage
 {
-	conf-file=/usr/share/dnsmasq/trust-anchors.conf 
-	dnssec
+   conf-file=/usr/share/dnsmasq/trust-anchors.conf 
+   dnssec
 }
 
 if you need wifi
@@ -194,7 +194,7 @@ nano .bashrc
 // always login as normal user
 reboot
 
-sudo pacman -Syu --needed git base-devel rustup
+sudo pacman -Syu --needed git base-devel rustup uwufetch
 ^14 // no sudo 
 
 rustup default stable
@@ -222,8 +222,8 @@ vainfo
 
 sudo nano /etc/security/limits.conf
 {
-	* soft nproc 150
-	* hard nproc 250
+   * soft nproc 150
+   * hard nproc 250
 }
       </pre>
 		<details>
@@ -279,7 +279,7 @@ sudo nano /etc/systemd/system/getty@tty1.service.d/autologin.conf
 }
 
 paru librewolf-bin
-      <a href="https://wiki.archlinux.org/title/General_recommendations" rel="noreferrer noopener">General recommendations</a>
+<a href="https://wiki.archlinux.org/title/General_recommendations" rel="noreferrer noopener">General recommendations</a>
       </pre>
 	</details>
 </body>
