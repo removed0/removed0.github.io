@@ -47,6 +47,15 @@ before installation disable secure boot and set the CMOS clock to UTC
       </pre>
    </details>
    <pre>
+to follow this guide in the iso: 
+{
+   press ALT+F2 to go into the second tty
+   {
+      lynx removed0.github.io/arch_install.html
+   }
+   switch back to the first tty: ALT+F1
+} // you have 7 ttys // usefull
+
 ls /sys/firmware/efi/efivars // if it lists files it means you've booted in UEFI mode, which is needed
 
 if you need to connect to wifi // better use wired
@@ -125,7 +134,7 @@ nano /boot/loader/entries/arch.conf
    linux   /vmlinuz-linux-zen
    initrd  /initramfs-linux-zen.img
    initrd  /intel-ucode.img
-   options root=&lt;<i>UUID</i>&gt; rw nowatchdog // &lt;<i>UUID</i>&gt; should look like: UUID=6d3376e4-fc93-4509-95ec-a21d68011da2 // add mitigations=off if performance yes but security no 
+   options root=&lt;<i>UUID</i>&gt; rw nowatchdog // &lt;<i>UUID</i>&gt; should look like: UUID=6d3376e4-fc93-4509-95ec-a21d68011da2 // add mitigations=off if you want to trade security for performance
 }
 
  echo default arch &gt; /boot/loader/loader.conf
