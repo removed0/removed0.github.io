@@ -51,12 +51,12 @@ ls /sys/firmware/efi/efivars // if it lists files it means you've booted in UEFI
 
 if you need to connect to wifi // better use wired
 {
-iwctl
-device list
-station &lt;<i>device</i>&gt; scan
-station &lt;<i>device</i>&gt; get-networks
-station &lt;<i>device</i>&gt; connect &lt;<i>network</i>&gt;
-exit
+   iwctl
+   device list
+   station &lt;<i>device</i>&gt; scan
+   station &lt;<i>device</i>&gt; get-networks
+   station &lt;<i>device</i>&gt; connect &lt;<i>network</i>&gt;
+   exit
 }
 
 ping -c4 archlinux.org // if it doesn't work, fix it lmao
@@ -64,8 +64,8 @@ ping -c4 archlinux.org // if it doesn't work, fix it lmao
 lsblk
 
 fdisk &lt;<i>disk</i>&gt;
-g
-w
+   g
+   w
 
 cfdisk &lt;<i>disk</i>&gt;
 partition 1. 512M, efi system
@@ -81,7 +81,7 @@ mount &lt;<i>root_partition</i>&gt; /mnt // YOU MUST MOUNT THIS FIRST
 mount --mkdir &lt;<i>efi_partition</i>&gt; /mnt/boot
 swapon &lt;<i>swap_partition</i>&gt;
 
-pacstrap -K /mnt base linux-zen linux-firmware linux-firmware-qlogic nano intel-ucode networkmanager which
+pacstrap -K /mnt base linux-zen linux-firmware linux-firmware-qlogic which nano intel-ucode networkmanager
 genfstab -U /mnt &gt;&gt; /mnt/etc/fstab
 nano /mnt/etc/fstab
 {
@@ -96,17 +96,17 @@ hwclock -w
 
 nano /etc/pacman.conf
 {
-comment Checkspace // if you have enough space
-uncomment multilib
-uncomment Color
-ParallelDownloads 4
+   comment Checkspace // if you have enough space
+   uncomment [multilib]
+   uncomment Color
+   ParallelDownloads 4
 }
 
 systemctl enable NetworkManager
 
 nano /etc/locale.gen
 {
-uncomment en_US.UTF-8 UTF-8
+   uncomment en_US.UTF-8 UTF-8
 }
 
 locale-gen
@@ -115,7 +115,7 @@ echo LANG=en_US.UTF-8 &gt; /etc/locale.conf
 echo &lt;<i>hostname</i>&gt; &gt; /etc/hostname
 </pre>
    <details>
-      <summary>bootloader (WIP)</summary>
+      <summary>bootloader</summary>
       <pre>
 bootctl install
 systemctl enable systemd-boot-update
@@ -123,27 +123,26 @@ systemctl enable systemd-boot-update
 blkid &lt;<i>root_partition</i>&gt; // Ex. /dev/sda3
 nano /boot/loader/entries/arch.conf
 {
- title   arch linux
- linux   /vmlinuz-linux-zen
- initrd  /initramfs-linux-zen.img
- initrd  /intel-ucode.img
- options root=&lt;<i>UUID</i>&gt; rw nowatchdog // &lt;<i>UUID</i>&gt; should look like: UUID=6d3376e4-fc93-4509-95ec-a21d68011da2 // add mitigations=off if performance yes but security no 
+   title   arch linux
+   linux   /vmlinuz-linux-zen
+   initrd  /initramfs-linux-zen.img
+   initrd  /intel-ucode.img
+   options root=&lt;<i>UUID</i>&gt; rw nowatchdog // &lt;<i>UUID</i>&gt; should look like: UUID=6d3376e4-fc93-4509-95ec-a21d68011da2 // add mitigations=off if performance yes but security no 
 }
 
  echo default arch &gt; /boot/loader/loader.conf
-
  </pre>
    </details>
    <pre>
 
- passwd // set root password
- exit
- reboot
+passwd // set root password
+exit
+reboot
 
- if you need wifi
- {
+if you need wifi
+{
    nmtui
- }
+}
 
 </pre>
    <details>
@@ -160,19 +159,15 @@ nano /boot/loader/entries/arch.conf
  chown -c root:root /etc/doas.conf
  chmod -c 0400 /etc/doas.conf
 
-nano /etc/bash.bashrc // or ln -s $(which doas) /usr/bin/sudo
+ln -s $(which doas) /usr/bin/sudo
+
+useradd -m -G wheel &lt;<i>username</i>&gt;
+passwd &lt;<i>username</i>&gt;
+su &lt;<i>username</i>&gt;
+
+cd ~
+nano .bashrc
 {
-   sudo="doas"
-   sudoedit="doas rnano"
-}
-
- useradd -m -G wheel &lt;<i>username</i>&gt;
- passwd &lt;<i>username</i>&gt;
- su &lt;<i>username</i>&gt;
-
- cd ~
- nano .bashrc
- {
    alias sudoedit="doas rnano"
    complete -cf doas
 }
@@ -185,28 +180,29 @@ git clone https://aur.archlinux.org/paru.git
 rustup default stable
 cd paru
 makepkg -si
+
 sudo nano /etc/paru.conf
 {
    Limit=80
- }
+}
 
- paru aic94xx-firmware // weird bug if all on same line??? PARU HAS ISSUE WITH MINUS SIGN IN NAME.
- paru upd72020x-fw
- paru wd719x-firmware
- if mkinitcpio -P not run, run it
+paru aic94xx-firmware // weird bug if all on same line??? PARU HAS ISSUE WITH MINUS SIGN IN NAME.
+paru upd72020x-fw
+paru wd719x-firmware
+if mkinitcpio -P not run, run it
 
 reboot
 
- sudo pacman -Syu intel-media-driver vulkan-intel mesa libva-utils
- reboot
+sudo pacman -Syu intel-media-driver vulkan-intel mesa libva-utils
+reboot
 
- vainfo
- // if it doesn't work add this to /etc/environment then reboot and try again
- {
+vainfo
+// if it doesn't work add this to /etc/environment then reboot and try again
+{
    LIBVA_DRIVER_NAME=iHD
- }
- paru -Rn libva-utils // if you want
- </pre>
+}
+paru -Rn libva-utils // if you want
+      </pre>
       <details>
          <summary>audio (WIP)</summary>
          <pre>
@@ -216,19 +212,19 @@ cp /usr/share/pipewire/{client,pipewire-pulse,pipewire}.conf ~/.config/pipewire/
 
 sudo nano ~/.config/pipewire/pipewire.conf
 {
-  default.clock.allowed-rates = [ 44800 44100 ]
+   default.clock.allowed-rates = [ 44800 44100 ]
 
-  on line 241 add: { path = "pactl" args = "load-module module-switch-on-connect" }
+   on line 242, next to context.exec add: { path = "pactl" args = "load-module module-switch-on-connect" }
 }
 
 sudo nano ~/.config/pipewire/client.conf
 {
-  resample.quality = 8
+   resample.quality = 8
 }
 
 sudo nano ~/.config/pipewire/pipewire-pulse.conf
 {
-  resample.quality = 8
+   resample.quality = 8
 }
  </pre>
       </details>
@@ -245,7 +241,7 @@ sudo nano ~/.config/pipewire/pipewire-pulse.conf
  nano ~/.bash_profile
  {
    if [ -z "${DISPLAY}" ] && [ "${XDG_VTNR}" -eq 1 ]; then
-     exec startx
+      exec startx
    fi
  }
 
