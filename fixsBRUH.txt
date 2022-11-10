@@ -615,8 +615,6 @@ Package Cache Size:
 keyboard binds for volume, pause music and stuff
 do more things
 _i want to die_
-display manager 
-install xorg
 mate vs xfce // damn // maybe offer both
 too much bloat // lmao
 pace is all fucked up

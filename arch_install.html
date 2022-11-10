@@ -1,36 +1,41 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8">
-    <meta content="width=device-width, initial-scale=1" name="viewport">
-    <title>arch page</title>
-    <link href="https://raw.githubusercontent.com/removed0/removed0.github.io/main/media/favicon.ico" rel="shortcut icon">
-    <meta content="https://github.com/removed0/" name="author">
-    <meta content="im gonna install arch" name="description">
-    <style>
+
+<head>
+   <meta charset="utf-8">
+   <meta content="width=device-width, initial-scale=1" name="viewport">
+   <title>arch page</title>
+   <link href="https://raw.githubusercontent.com/removed0/removed0.github.io/main/media/favicon.ico" rel="shortcut icon">
+   <meta content="https://github.com/removed0/" name="author">
+   <meta content="im gonna install arch" name="description">
+   <style>
       details {
-      padding-left: 2px;
-      border-style: solid;
-      border-color: lightgray;
-      border-radius: 3px;
-      border-width: 2px;
+         padding-left: 2px;
+         border-style: solid;
+         border-color: lightgray;
+         border-radius: 3px;
+         border-width: 2px;
       }
+
       a:link {
-      color: green;
-      text-decoration: none;
+         color: green;
+         text-decoration: none;
       }
+
       a:visited {
-      color: rgb(20, 95, 20);
-      text-decoration: none;
+         color: rgb(20, 95, 20);
+         text-decoration: none;
       }
+
       a:hover {
-      text-decoration: underline;
+         text-decoration: underline;
       }
-    </style>
-  </head>
-  <body style="background-color: #151515; color: white; font-size: larger;">
-    <h2>whole page is WIP</h2>
-    <details>
+   </style>
+</head>
+
+<body style="background-color: #151515; color: white; font-size: larger;">
+   <h2>whole page is WIP</h2>
+   <details>
       <summary>preinstallation</summary>
       <pre>
 download the arch iso and the arch iso pgp signature from <a href="https://archlinux.org/download/" rel="noreferrer noopener">archlinux.org</a>
@@ -40,8 +45,8 @@ gpg --keyserver-options auto-key-retrieve --verify archlinux-&lt;<i>version</i>&
 
 before installation disable secure boot and set the CMOS clock to UTC
  </pre>
-    </details>
-    <pre>
+   </details>
+   <pre>
 ls /sys/firmware/efi/efivars // if it lists files it means you've booted in UEFI mode, which is needed
 
 if you need to connect to wifi // better use wired
@@ -80,7 +85,7 @@ pacstrap -K /mnt base linux-zen linux-firmware linux-firmware-qlogic nano intel-
 genfstab -U /mnt &gt;&gt; /mnt/etc/fstab
 nano /mnt/etc/fstab
 {
-the root partition &lt;<i>options</i>&gt; should have noatime,commit=20 // delete relatime
+   the root partition &lt;<i>options</i>&gt; should have noatime, commit=20
 }
 
 arch-chroot /mnt
@@ -109,7 +114,7 @@ echo LANG=en_US.UTF-8 &gt; /etc/locale.conf
 
 echo &lt;<i>hostname</i>&gt; &gt; /etc/hostname
 </pre>
-    <details>
+   <details>
       <summary>bootloader (WIP)</summary>
       <pre>
 bootctl install
@@ -128,8 +133,8 @@ nano /boot/loader/entries/arch.conf
  echo default arch &gt; /boot/loader/loader.conf
 
  </pre>
-    </details>
-    <pre>
+   </details>
+   <pre>
 
  passwd // set root password
  exit
@@ -141,7 +146,7 @@ nano /boot/loader/entries/arch.conf
  }
 
 </pre>
-    <details>
+   <details>
       <summary>after install (WIP)</summary>
       <pre>
  pacman -Syu opendoas // make sure sudo is not installed
@@ -155,7 +160,11 @@ nano /boot/loader/entries/arch.conf
  chown -c root:root /etc/doas.conf
  chmod -c 0400 /etc/doas.conf
 
- ln -s $(which doas) /usr/bin/sudo
+nano /etc/bash.bashrc // or ln -s $(which doas) /usr/bin/sudo
+{
+   sudo="doas"
+   sudoedit="doas rnano"
+}
 
  useradd -m -G wheel &lt;<i>username</i>&gt;
  passwd &lt;<i>username</i>&gt;
@@ -166,18 +175,18 @@ nano /boot/loader/entries/arch.conf
  {
    alias sudoedit="doas rnano"
    complete -cf doas
- }
- // always login as normal user
- reboot
+}
+// always login as normal user
+reboot
 
- sudo pacman -Syu --needed git base-devel rustup
- ^24 // no sudo
- rustup default stable
- git clone https://aur.archlinux.org/paru.git
- cd paru
- makepkg -si
- sudo nano /etc/paru.conf
- {
+sudo pacman -Syu --needed git base-devel rustup
+^14 // no sudo 
+git clone https://aur.archlinux.org/paru.git 
+rustup default stable
+cd paru
+makepkg -si
+sudo nano /etc/paru.conf
+{
    Limit=80
  }
 
@@ -199,8 +208,8 @@ reboot
  paru -Rn libva-utils // if you want
  </pre>
       <details>
-        <summary>audio (WIP)</summary>
-        <pre>
+         <summary>audio (WIP)</summary>
+         <pre>
 sudo pacman -Syu pipewire pipewire-{pulse,jack}
 
 cp /usr/share/pipewire/{client,pipewire-pulse,pipewire}.conf ~/.config/pipewire/
@@ -252,6 +261,7 @@ sudo nano ~/.config/pipewire/pipewire-pulse.conf
  paru librewolf-bin
  <a href="https://wiki.archlinux.org/title/General_recommendations" rel="noreferrer noopener">General recommendations</a>
  </pre>
-    </details>
-  </body>
+   </details>
+</body>
+
 </html>
