@@ -2,42 +2,42 @@
 <html lang="en">
 
 <head>
-   <meta charset="utf-8">
-   <meta content="width=device-width, initial-scale=1" name="viewport">
-   <title>arch page</title>
-   <link href="https://raw.githubusercontent.com/removed0/removed0.github.io/main/media/favicon.ico" rel="shortcut icon">
-   <meta content="https://github.com/removed0/" name="author">
-   <meta content="im gonna install arch" name="description">
-   <style>
-      details {
-         padding-left: 2px;
-         border-style: solid;
-         border-color: lightgray;
-         border-radius: 3px;
-         border-width: 2px;
-      }
+	<meta charset="utf-8">
+	<meta content="width=device-width, initial-scale=1" name="viewport">
+	<title>arch page</title>
+	<link href="https://raw.githubusercontent.com/removed0/removed0.github.io/main/media/favicon.ico" rel="shortcut icon">
+	<meta content="https://github.com/removed0/" name="author">
+	<meta content="im gonna install arch" name="description">
+	<style>
+		details {
+			padding-left: 2px;
+			border-style: solid;
+			border-color: lightgray;
+			border-radius: 3px;
+			border-width: 2px;
+		}
 
-      a:link {
-         color: green;
-         text-decoration: none;
-      }
+		a:link {
+			color: green;
+			text-decoration: none;
+		}
 
-      a:visited {
-         color: rgb(20, 95, 20);
-         text-decoration: none;
-      }
+		a:visited {
+			color: rgb(20, 95, 20);
+			text-decoration: none;
+		}
 
-      a:hover {
-         text-decoration: underline;
-      }
-   </style>
+		a:hover {
+			text-decoration: underline;
+		}
+	</style>
 </head>
 
 <body style="background-color: #151515; color: white; font-size: larger;">
-   <h2>whole page is WIP</h2>
-   <details>
-      <summary>preinstallation</summary>
-      <pre>
+	<h2>whole page is WIP</h2>
+	<details>
+		<summary>preinstallation</summary>
+		<pre>
 download the arch iso and the arch iso pgp signature from <a href="https://archlinux.org/download/" rel="noreferrer noopener">archlinux.org</a>
 
 in the same directory as the iso and signature, verify integrity:
@@ -45,8 +45,8 @@ gpg --keyserver-options auto-key-retrieve --verify archlinux-&lt;<i>version</i>&
 
 before installation disable secure boot and set the CMOS clock to UTC
       </pre>
-   </details>
-   <pre>
+	</details>
+	<pre>
 to follow this guide in the iso: 
 {
    press ALT+F2 to go into the second tty
@@ -54,7 +54,7 @@ to follow this guide in the iso:
       lynx removed0.github.io/arch_install.html
    }
    switch back to the first tty: ALT+F1
-} // you have 7 ttys // usefull
+} // you have 7 ttys // useful
 
 ls /sys/firmware/efi/efivars // if it lists files it means you've booted in UEFI mode, which is needed
 
@@ -121,9 +121,9 @@ echo LANG=en_US.UTF-8 &gt; /etc/locale.conf
 
 echo &lt;<i>hostname</i>&gt; &gt; /etc/hostname
    </pre>
-   <details>
-      <summary>bootloader</summary>
-      <pre>
+	<details>
+		<summary>bootloader</summary>
+		<pre>
 bootctl install
 systemctl enable systemd-boot-update
 
@@ -139,12 +139,24 @@ nano /boot/loader/entries/arch.conf
 
  echo default arch &gt; /boot/loader/loader.conf
       </pre>
-   </details>
-   <pre>
+	</details>
+	<pre>
 
 passwd // set root password
 exit
 reboot
+
+nano /etc/NetworkManager/NetworkManager.conf
+{
+	[connection] 
+	ipv6.ip6-privacy=2
+}
+
+nano /etc/NetworkManager/dnsmasq.d/dnssec.conf // might cause breakage
+{
+	conf-file=/usr/share/dnsmasq/trust-anchors.conf 
+	dnssec
+}
 
 if you need wifi
 {
@@ -152,9 +164,9 @@ if you need wifi
 }
 
    </pre>
-   <details>
-      <summary>after install (WIP)</summary>
-      <pre>
+	<details>
+		<summary>after install (WIP)</summary>
+		<pre>
 pacman -Syu opendoas // make sure sudo is not installed
 nano /etc/doas.conf
 {
@@ -190,10 +202,7 @@ git clone https://aur.archlinux.org/paru.git
 cd paru
 makepkg -si
 
-sudo nano /etc/paru.conf
-{
-   Limit=80
-}
+sudo echo Limit=80 &gt;&gt; /etc/paru.conf
 
 paru aic94xx-firmware // weird bug if all on same line??? PARU HAS ISSUE WITH MINUS SIGN IN NAME.
 paru upd72020x-fw
@@ -206,15 +215,20 @@ sudo pacman -Syu intel-media-driver vulkan-intel mesa libva-utils
 reboot
 
 vainfo
-// if it doesn't work add this to /etc/environment then reboot and try again
-{
-   LIBVA_DRIVER_NAME=iHD
-}
+// if it doesn't work you might need to do this
+// sudo echo LIBVA_DRIVER_NAME=iHD >> /etc/environment
+
 // paru -Rn libva-utils // if you want
+
+sudo nano /etc/security/limits.conf
+{
+	* soft nproc 150
+	* hard nproc 250
+}
       </pre>
-      <details>
-         <summary>audio (WIP)</summary>
-         <pre>
+		<details>
+			<summary>audio (WIP)</summary>
+			<pre>
 sudo pacman -Syu pipewire pipewire-{pulse,jack}
 
 cp /usr/share/pipewire/{client,pipewire-pulse,pipewire}.conf ~/.config/pipewire/
@@ -236,8 +250,9 @@ sudo nano ~/.config/pipewire/pipewire-pulse.conf
    resample.quality = 8
 }
          </pre>
-      </details>
-      <pre>
+		</details>
+		<h2>bad from here</h2>
+		<pre>
 sudo pacman -Syu xorg-server xorg-xinit xfce4 xfce4-goodies htop bluez code network-manager-applet transmission-gtk
 xfce ^14 // no user guide
 xfce-goodies ^30 // no task manager
@@ -266,7 +281,7 @@ sudo nano /etc/systemd/system/getty@tty1.service.d/autologin.conf
 paru librewolf-bin
       <a href="https://wiki.archlinux.org/title/General_recommendations" rel="noreferrer noopener">General recommendations</a>
       </pre>
-   </details>
+	</details>
 </body>
 
 </html>
