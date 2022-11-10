@@ -44,7 +44,7 @@ in the same directory as the iso and signature, verify integrity:
 gpg --keyserver-options auto-key-retrieve --verify archlinux-&lt;<i>version</i>&gt;-x86_64.iso.sig
 
 before installation disable secure boot and set the CMOS clock to UTC
- </pre>
+      </pre>
    </details>
    <pre>
 ls /sys/firmware/efi/efivars // if it lists files it means you've booted in UEFI mode, which is needed
@@ -62,7 +62,6 @@ if you need to connect to wifi // better use wired
 ping -c4 archlinux.org // if it doesn't work, fix it lmao
 
 lsblk
-
 fdisk &lt;<i>disk</i>&gt;
    g
    w
@@ -83,6 +82,7 @@ swapon &lt;<i>swap_partition</i>&gt;
 
 pacstrap -K /mnt base linux-zen linux-firmware linux-firmware-qlogic which nano intel-ucode networkmanager
 genfstab -U /mnt &gt;&gt; /mnt/etc/fstab
+
 nano /mnt/etc/fstab
 {
    the root partition &lt;<i>options</i>&gt; should have noatime, commit=20
@@ -90,8 +90,7 @@ nano /mnt/etc/fstab
 
 arch-chroot /mnt
 
-// ln -sf /usr/share/zoneinfo/Europe/Bucharest /etc/localtime
-ln -sf /usr/share/zoneinfo/&lt;<i>Region</i>&gt;/&lt;<i>City</i>&gt; /etc/localtime
+ln -sf /usr/share/zoneinfo/&lt;<i>Region</i>&gt;/&lt;<i>City</i>&gt; /etc/localtime // zoneinfo/Europe/Bucharest
 hwclock -w
 
 nano /etc/pacman.conf
@@ -108,12 +107,11 @@ nano /etc/locale.gen
 {
    uncomment en_US.UTF-8 UTF-8
 }
-
 locale-gen
 echo LANG=en_US.UTF-8 &gt; /etc/locale.conf
 
 echo &lt;<i>hostname</i>&gt; &gt; /etc/hostname
-</pre>
+   </pre>
    <details>
       <summary>bootloader</summary>
       <pre>
@@ -131,7 +129,7 @@ nano /boot/loader/entries/arch.conf
 }
 
  echo default arch &gt; /boot/loader/loader.conf
- </pre>
+      </pre>
    </details>
    <pre>
 
@@ -144,20 +142,20 @@ if you need wifi
    nmtui
 }
 
-</pre>
+   </pre>
    <details>
       <summary>after install (WIP)</summary>
       <pre>
- pacman -Syu opendoas // make sure sudo is not installed
- nano /etc/doas.conf
- {
+pacman -Syu opendoas // make sure sudo is not installed
+nano /etc/doas.conf
+{
    permit :wheel
    permit setenv { XAUTHORITY LANG LC_ALL } :wheel
 
- }
+}
 
- chown -c root:root /etc/doas.conf
- chmod -c 0400 /etc/doas.conf
+chown -c root:root /etc/doas.conf
+chmod -c 0400 /etc/doas.conf
 
 ln -s $(which doas) /usr/bin/sudo
 
@@ -171,13 +169,15 @@ nano .bashrc
    alias sudoedit="doas rnano"
    complete -cf doas
 }
+
 // always login as normal user
 reboot
 
 sudo pacman -Syu --needed git base-devel rustup
 ^14 // no sudo 
-git clone https://aur.archlinux.org/paru.git 
+
 rustup default stable
+git clone https://aur.archlinux.org/paru.git 
 cd paru
 makepkg -si
 
@@ -189,7 +189,7 @@ sudo nano /etc/paru.conf
 paru aic94xx-firmware // weird bug if all on same line??? PARU HAS ISSUE WITH MINUS SIGN IN NAME.
 paru upd72020x-fw
 paru wd719x-firmware
-if mkinitcpio -P not run, run it
+// if mkinitcpio -P not run, run it
 
 reboot
 
@@ -201,7 +201,7 @@ vainfo
 {
    LIBVA_DRIVER_NAME=iHD
 }
-paru -Rn libva-utils // if you want
+// paru -Rn libva-utils // if you want
       </pre>
       <details>
          <summary>audio (WIP)</summary>
@@ -226,37 +226,37 @@ sudo nano ~/.config/pipewire/pipewire-pulse.conf
 {
    resample.quality = 8
 }
- </pre>
+         </pre>
       </details>
       <pre>
- sudo pacman -Syu xorg-server xorg-xinit xfce4 xfce4-goodies htop bluez code network-manager-applet transmission-gtk
- xfce ^14 // no user guide
- xfce-goodies ^30 // no task manager
+sudo pacman -Syu xorg-server xorg-xinit xfce4 xfce4-goodies htop bluez code network-manager-applet transmission-gtk
+xfce ^14 // no user guide
+xfce-goodies ^30 // no task manager
 
- nano ~/.xinitrc
- {
+nano ~/.xinitrc
+{
    startxfce4
- }
+}
 
- nano ~/.bash_profile
- {
+nano ~/.bash_profile
+{
    if [ -z "${DISPLAY}" ] && [ "${XDG_VTNR}" -eq 1 ]; then
       exec startx
    fi
- }
+}
 
- sudo nano /etc/systemd/system/getty@tty1.service.d/autologin.conf
- {
+sudo nano /etc/systemd/system/getty@tty1.service.d/autologin.conf
+{
    Environment=XDG_SESSION_TYPE=x11
    Type=simple
    [Service]
    ExecStart=
    ExecStart=-/sbin/agetty -o '-p -f -- \\u' --noclear --autologin username %I $TERM
- }
+}
 
- paru librewolf-bin
- <a href="https://wiki.archlinux.org/title/General_recommendations" rel="noreferrer noopener">General recommendations</a>
- </pre>
+paru librewolf-bin
+      <a href="https://wiki.archlinux.org/title/General_recommendations" rel="noreferrer noopener">General recommendations</a>
+      </pre>
    </details>
 </body>
 
