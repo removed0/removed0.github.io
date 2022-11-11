@@ -38,6 +38,7 @@
    <details>
       <summary>preinstallation</summary>
       <pre>
+<a href="https://soundcloud.com/removed0" rel="noreferrer noopener">my soundcloud</a>
 download the arch iso and the arch iso pgp signature from <a href="https://archlinux.org/download/" rel="noreferrer noopener">archlinux.org</a>
 
 in the same directory as the iso and signature, verify integrity:
@@ -94,7 +95,7 @@ genfstab -U /mnt &gt;&gt; /mnt/etc/fstab
 
 nano /mnt/etc/fstab
 {
-   the root partition &lt;<i>options</i>&gt; should have noatime, commit=20
+   the root partition &lt;<i>options</i>&gt; should have noatime,commit=30
 }
 
 arch-chroot /mnt
@@ -132,8 +133,8 @@ nano /boot/loader/entries/arch.conf
 {
    title   arch linux
    linux   /vmlinuz-linux-zen
-   initrd  /initramfs-linux-zen.img
    initrd  /intel-ucode.img
+   initrd  /initramfs-linux-zen.img
    options root=&lt;<i>UUID</i>&gt; rw nowatchdog // &lt;<i>UUID</i>&gt; should look like: UUID=6d3376e4-fc93-4509-95ec-a21d68011da2 // add mitigations=off if you want to trade security for performance
 }
 
@@ -146,67 +147,54 @@ passwd // set root password
 exit
 reboot
 
-nano /etc/sysctl.conf
+nano /etc/security/limits.conf
+{
+   * soft nproc 150
+   * hard nproc 250
+}
+
+nano /etc/sysctl.d/custom.conf
 {
    vm.swappiness = 20
-   vm.min_free_kbytes=1100000
+   vm.vfs_cache_pressure = 70
+   vm.dirty_background_ratio = 4
+   vm.dirty_ratio = 4
+   vm.min_free_kbytes = 1100000
+   net.ipv6.icmp.echo_ignore_all = 1
+   net.ipv4.icmp_echo_ignore_all = 1 
+   net.ipv4.tcp_rfc1337 = 1
+   net.ipv4.tcp_fastopen = 3
+   net.ipv4.tcp_mtu_probing = 1
+   kernel.kexec_load_disabled = 1
 }
 
-nano /etc/X11/xorg.conf.d/20-intel.conf
+/etc/NetworkManager/conf.d/wifi_rand_mac.conf
 {
-   Section "Device"
-   Identifier "Intel Graphics"
-   Driver "intel"
-   Option "TearFree" "true"
-   EndSection
+   [connection-mac-randomization]
+
+   ethernet.cloned-mac-address=random
+   wifi.cloned-mac-address=random
 }
-
-// OPENBOX, LXDE QT
-
-nano /etc/X11/xorg.conf.d/50-mouse-acceleration.conf
+/etc/NetworkManager/NetworkManager.conf
 {
-   Section "InputClass"
-   Identifier "My Mouse"
-   MatchIsPointer "yes"
-   Option "AccelerationProfile" "-1"
-   Option "AccelerationScheme" "none"
-   Option "AccelSpeed" "-1"
-   EndSection
-}
-
-nano /etc/drirc
-{
-   &lt;driconf&gt;
-   &lt;device&gt;
-   &lt;application name="Default"&gt;
-   &lt;option name="vblank_mode" value="0" /&gt;
-   &lt;/application&gt;
-   &lt;/device&gt;
-   &lt;/driconf&gt;
-}
-
-nano /etc/NetworkManager/NetworkManager.conf
-{
-   [connection] 
+   [connection]
    ipv6.ip6-privacy=2
 }
 
-nano /etc/NetworkManager/dnsmasq.d/dnssec.conf // might cause breakage
+nano /etc/makepkg.conf
 {
-   conf-file=/usr/share/dnsmasq/trust-anchors.conf 
-   dnssec
+   CFLAGS="-march=native" // delete mtune
+   MAKEFLAGS="-j$(nproc-1)"
+   RUSTFLAGS="-C target-cpu=native"
 }
 
-if you need wifi
-{
-   nmtui
-}
+// nmtui // if you need wifi
    </pre>
    <details>
       <summary>after install (WIP)</summary>
       <pre>
 pacman -Syu opendoas // make sure sudo is not installed
-nano /etc/doas.conf
+nano /etc/doas.conf // OPENBOX, LXDE QT
 {
    permit :wheel
    permit setenv { XAUTHORITY LANG LC_ALL } :wheel
@@ -225,7 +213,8 @@ su &lt;<i>username</i>&gt;
 cd ~
 nano .bashrc
 {
-   alias sudoedit="doas rnano"
+   alias sudoedit='doas rnano'
+   alias shutdown='shutdown now'
    complete -cf doas
 }
 
@@ -257,12 +246,6 @@ vainfo
 // sudo echo LIBVA_DRIVER_NAME=iHD >> /etc/environment
 
 // paru -Rn libva-utils // if you want
-
-sudo nano /etc/security/limits.conf
-{
-   * soft nproc 150
-   * hard nproc 250
-}
       </pre>
       <details>
          <summary>audio (WIP)</summary>
@@ -294,6 +277,40 @@ sudo nano ~/.config/pipewire/pipewire-pulse.conf
 sudo pacman -Syu xorg-server xorg-xinit xfce4 xfce4-goodies htop bluez code network-manager-applet transmission-gtk
 xfce ^14 // no user guide
 xfce-goodies ^30 // no task manager
+
+// if you install xf86-video-intel // enables vsync or smth like that
+{
+   nano /etc/X11/xorg.conf.d/20-intel.conf
+   {
+      Section "Device"
+      Identifier "Intel Graphics"
+      Driver "intel"
+      Option "TearFree" "true"
+      EndSection
+   }
+}
+
+// nano ~/.drirc // BAD // might improve performance
+{
+   &lt;driconf&gt;
+   &lt;device&gt;
+   &lt;application name="Default"&gt;
+   &lt;option name="vblank_mode" value="0" /&gt;
+   &lt;/application&gt;
+   &lt;/device&gt;
+   &lt;/driconf&gt;
+}
+
+nano /etc/X11/xorg.conf.d/50-mouse-acceleration.conf // disable mouse acceleration
+{
+   Section "InputClass"
+   Identifier "My Mouse"
+   MatchIsPointer "yes"
+   Option "AccelerationProfile" "-1"
+   Option "AccelerationScheme" "none"
+   Option "AccelSpeed" "-1"
+   EndSection
+}
 
 nano ~/.xinitrc
 {
