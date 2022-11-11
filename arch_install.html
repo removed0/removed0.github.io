@@ -2,42 +2,42 @@
 <html lang="en">
 
 <head>
-	<meta charset="utf-8">
-	<meta content="width=device-width, initial-scale=1" name="viewport">
-	<title>arch page</title>
-	<link href="https://raw.githubusercontent.com/removed0/removed0.github.io/main/media/favicon.ico" rel="shortcut icon">
-	<meta content="https://github.com/removed0/" name="author">
-	<meta content="im gonna install arch" name="description">
-	<style>
-		details {
-			padding-left: 2px;
-			border-style: solid;
-			border-color: lightgray;
-			border-radius: 3px;
-			border-width: 2px;
-		}
+   <meta charset="utf-8">
+   <meta content="width=device-width, initial-scale=1" name="viewport">
+   <title>arch page</title>
+   <link href="https://raw.githubusercontent.com/removed0/removed0.github.io/main/media/favicon.ico" rel="shortcut icon">
+   <meta content="https://github.com/removed0/" name="author">
+   <meta content="im gonna install arch" name="description">
+   <style>
+      details {
+         padding-left: 2px;
+         border-style: solid;
+         border-color: lightgray;
+         border-radius: 3px;
+         border-width: 2px;
+      }
 
-		a:link {
-			color: green;
-			text-decoration: none;
-		}
+      a:link {
+         color: green;
+         text-decoration: none;
+      }
 
-		a:visited {
-			color: rgb(20, 95, 20);
-			text-decoration: none;
-		}
+      a:visited {
+         color: rgb(20, 95, 20);
+         text-decoration: none;
+      }
 
-		a:hover {
-			text-decoration: underline;
-		}
-	</style>
+      a:hover {
+         text-decoration: underline;
+      }
+   </style>
 </head>
 
 <body style="background-color: #151515; color: white; font-size: larger;">
-	<h2>whole page is WIP</h2>
-	<details>
-		<summary>preinstallation</summary>
-		<pre>
+   <h2>whole page is WIP</h2>
+   <details>
+      <summary>preinstallation</summary>
+      <pre>
 download the arch iso and the arch iso pgp signature from <a href="https://archlinux.org/download/" rel="noreferrer noopener">archlinux.org</a>
 
 in the same directory as the iso and signature, verify integrity:
@@ -45,8 +45,8 @@ gpg --keyserver-options auto-key-retrieve --verify archlinux-&lt;<i>version</i>&
 
 before installation disable secure boot and set the CMOS clock to UTC
       </pre>
-	</details>
-	<pre>
+   </details>
+   <pre>
 to follow this guide in the iso: 
 {
    press ALT+F2 to go into the second tty
@@ -121,9 +121,9 @@ echo LANG=en_US.UTF-8 &gt; /etc/locale.conf
 
 echo &lt;<i>hostname</i>&gt; &gt; /etc/hostname
    </pre>
-	<details>
-		<summary>bootloader</summary>
-		<pre>
+   <details>
+      <summary>bootloader</summary>
+      <pre>
 bootctl install
 systemctl enable systemd-boot-update
 
@@ -139,8 +139,8 @@ nano /boot/loader/entries/arch.conf
 
 echo default arch &gt; /boot/loader/loader.conf
       </pre>
-	</details>
-	<pre>
+   </details>
+   <pre>
 
 passwd // set root password
 exit
@@ -150,40 +150,39 @@ nano /etc/sysctl.conf
 {
    vm.swappiness = 20
    vm.min_free_kbytes=1100000
-
 }
 
 nano /etc/X11/xorg.conf.d/20-intel.conf
 {
    Section "Device"
-    Identifier "Intel Graphics"
-    Driver "intel"
-    Option "TearFree" "true"
+   Identifier "Intel Graphics"
+   Driver "intel"
+   Option "TearFree" "true"
    EndSection
 }
 
-OPENBOX, LXDE QT
+// OPENBOX, LXDE QT
 
 nano /etc/X11/xorg.conf.d/50-mouse-acceleration.conf
 {
    Section "InputClass"
-   	Identifier "My Mouse"
-   	MatchIsPointer "yes"
-   	Option "AccelerationProfile" "-1"
-   	Option "AccelerationScheme" "none"
-   	Option "AccelSpeed" "-1"
+   Identifier "My Mouse"
+   MatchIsPointer "yes"
+   Option "AccelerationProfile" "-1"
+   Option "AccelerationScheme" "none"
+   Option "AccelSpeed" "-1"
    EndSection
 }
 
 nano /etc/drirc
 {
-   <driconf>
-      <device>
-          <application name="Default">
-              <option name="vblank_mode" value="0" />
-          </application>
-      </device>
-   </driconf>
+   &lt;driconf&gt;
+   &lt;device&gt;
+   &lt;application name="Default"&gt;
+   &lt;option name="vblank_mode" value="0" /&gt;
+   &lt;/application&gt;
+   &lt;/device&gt;
+   &lt;/driconf&gt;
 }
 
 nano /etc/NetworkManager/NetworkManager.conf
@@ -203,9 +202,9 @@ if you need wifi
    nmtui
 }
    </pre>
-	<details>
-		<summary>after install (WIP)</summary>
-		<pre>
+   <details>
+      <summary>after install (WIP)</summary>
+      <pre>
 pacman -Syu opendoas // make sure sudo is not installed
 nano /etc/doas.conf
 {
@@ -265,9 +264,9 @@ sudo nano /etc/security/limits.conf
    * hard nproc 250
 }
       </pre>
-		<details>
-			<summary>audio (WIP)</summary>
-			<pre>
+      <details>
+         <summary>audio (WIP)</summary>
+         <pre>
 sudo pacman -Syu pipewire pipewire-{pulse,jack}
 
 cp /usr/share/pipewire/{client,pipewire-pulse,pipewire}.conf ~/.config/pipewire/
@@ -289,9 +288,9 @@ sudo nano ~/.config/pipewire/pipewire-pulse.conf
    resample.quality = 8
 }
          </pre>
-		</details>
-		<h2>bad from here</h2>
-		<pre>
+      </details>
+      <h2>bad from here</h2>
+      <pre>
 sudo pacman -Syu xorg-server xorg-xinit xfce4 xfce4-goodies htop bluez code network-manager-applet transmission-gtk
 xfce ^14 // no user guide
 xfce-goodies ^30 // no task manager
@@ -320,7 +319,7 @@ sudo nano /etc/systemd/system/getty@tty1.service.d/autologin.conf
 paru librewolf-bin
 <a href="https://wiki.archlinux.org/title/General_recommendations" rel="noreferrer noopener">General recommendations</a>
       </pre>
-	</details>
+   </details>
 </body>
 
 </html>
