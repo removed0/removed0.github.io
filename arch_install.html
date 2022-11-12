@@ -163,27 +163,27 @@ reboot
       <pre>
 nano /etc/security/limits.conf
 {
-   * soft nproc 150
-   * hard nproc 250
+   * soft nproc 130
+   * hard nproc 230
 }
 
 nano /etc/sysctl.d/custom.conf
 {
-   vm.swappiness = 20
+   vm.swappiness = 25
    vm.vfs_cache_pressure = 70
    vm.dirty_background_ratio = 5
    vm.dirty_ratio = 4
-   vm.min_free_kbytes = 880000
+   vm.min_free_kbytes = 780000
    tcp_slow_start_after_idle = 0
+   net.ipv4.icmp_echo_ignore_all = 1
    net.ipv4.tcp_rfc1337 = 1
    net.ipv4.tcp_fastopen = 3
-   net.ipv4.tcp_mtu_probing = 1
-   net.ipv4.conf.default.rp_filter = 1
-   net.ipv4.conf.all.rp_filter = 1
-   net.ipv4.icmp_echo_ignore_all = 1       
+   net.ipv4.tcp_mtu_probing = 1       
    net.ipv4.tcp_keepalive_time = 80
    net.ipv4.tcp_keepalive_intvl = 10
    net.ipv4.tcp_keepalive_probes = 4
+   net.ipv4.conf.default.rp_filter = 1
+   net.ipv4.conf.all.rp_filter = 1
    net.ipv4.conf.all.accept_redirects = 0
    net.ipv4.conf.default.accept_redirects = 0
    net.ipv4.conf.all.secure_redirects = 0
@@ -214,8 +214,11 @@ nano /etc/NetworkManager/NetworkManager.conf
 nano /etc/makepkg.conf
 {
    CFLAGS="-march=native" // delete mtune
-   MAKEFLAGS="-j$(nproc-1)"
-   RUSTFLAGS="-C target-cpu=native"
+   RUSTFLAGS="-O -C target-cpu=native"
+   MAKEFLAGS="-j3"
+   BUILDDIR=/tmp/makepkg
+   PKGDEST=/home/.mkpkgpackages
+   SRCDEST=/home/.mkpkgsources
 }
 
 // nmtui // if you need wifi
@@ -237,9 +240,11 @@ useradd -m -G wheel &lt;<i>username</i>&gt;
 passwd &lt;<i>username</i>&gt;
 su &lt;<i>username</i>&gt;
 
-cd ~
+cd
 nano .bashrc
 {
+   alias ..='cd ..'
+   alias cd..='cd ..'
    alias sudoedit='doas rnano'
    alias shutdown='shutdown now'
    complete -cf doas
@@ -259,13 +264,13 @@ makepkg -si
 sudo echo Limit=80 &gt;&gt; /etc/paru.conf
 
 paru aic94xx-firmware // weird bug if all on same line??? PARU HAS ISSUE WITH MINUS SIGN IN NAME.
-paru upd72020x-fw
 paru wd719x-firmware
+paru upd72020x-fw
 // if mkinitcpio -P not run, run it
 
 reboot
 
-sudo pacman -Syu intel-media-driver vulkan-intel mesa libva-utils
+sudo pacman -S intel-media-driver vulkan-intel mesa libva-utils
 reboot
 
 vainfo
@@ -277,33 +282,38 @@ vainfo
       <details>
          <summary>audio (WIP)</summary>
          <pre>
-sudo pacman -Syu pipewire pipewire-{pulse,jack}
+sudo pacman -S pipewire pipewire-{pulse,jack}
+2 // wireplumber
 
-cp /usr/share/pipewire/{client,pipewire,pipewire-pulse}.conf ~/.config/pipewire/
+mkdir .config
+mkdir .config/pipewire
+cp /usr/share/pipewire/{client,pipewire,pipewire-pulse}.conf .config/pipewire/
 
-sudo nano ~/.config/pipewire/pipewire.conf
+cd .config/pipewire
+nano pipewire.conf
 {
    default.clock.allowed-rates = [ 44800 44100 ]
-
+sud
    on line 242, next to context.exec add: { path = "pactl" args = "load-module module-switch-on-connect" }
 }
 
-sudo nano ~/.config/pipewire/client.conf
+nano client.conf
 {
    resample.quality = 8
 }
 
-sudo nano ~/.config/pipewire/pipewire-pulse.conf
+nano pipewire-pulse.conf
 {
    resample.quality = 8
 }
+
+// paru easyeffects // see <a href="https://github.com/jaakkopasanen/AutoEq" rel="norefferer nofollow">AutoEq</a> for collection of ai generated eq presets for headphones // testing
          </pre>
       </details>
-      <h2>bad from here, bad bad</h2>
+      <h2>bad from here</h2>
       <pre>
-sudo pacman -Syu xorg-server xorg-xinit xfce4 xfce4-goodies htop bluez code network-manager-applet transmission-gtk
-xfce ^14 // no user guide
-xfce-goodies ^30 // no task manager
+sudo pacman -Syu xorg-server xorg-xinit xfce4 // xfce4-goodies htop bluez code network-manager-applet transmission-gtk
+// xfce-goodies ^30 // no task manager
 
 // if you install xf86-video-intel // enables vsync or smth like that
 {
@@ -317,7 +327,7 @@ xfce-goodies ^30 // no task manager
    }
 }
 
-// nano ~/.drirc // BAD // might improve performance
+// cd && nano .drirc // BAD // might improve performance // disables vsync??
 {
    &lt;driconf&gt;
    &lt;device&gt;
@@ -328,7 +338,7 @@ xfce-goodies ^30 // no task manager
    &lt;/driconf&gt;
 }
 
-nano /etc/X11/xorg.conf.d/50-mouse-acceleration.conf
+// nano /etc/X11/xorg.conf.d/50-mouse-acceleration.conf // disables mouse acceleration
 {
    Section "InputClass"
    Identifier "My Mouse"
@@ -339,12 +349,13 @@ nano /etc/X11/xorg.conf.d/50-mouse-acceleration.conf
    EndSection
 }
 
-nano ~/.xinitrc
+cd
+nano .xinitrc
 {
    startxfce4
 }
 
-nano ~/.bash_profile
+nano .bash_profile
 {
    if [ -z "${DISPLAY}" ] && [ "${XDG_VTNR}" -eq 1 ]; then
       exec startx
@@ -357,10 +368,10 @@ sudo nano /etc/systemd/system/getty@tty1.service.d/autologin.conf
    Type=simple
    [Service]
    ExecStart=
-   ExecStart=-/sbin/agetty -o '-p -f -- \\u' --noclear --autologin username %I $TERM
+   ExecStart=-/sbin/agetty -o '-p -f -- \\u' --noclear --autologin &lt;<i>username</i>&gt; %I $TERM
 }
 
-paru librewolf-bin
+// paru librewolf-bin
 <a href="https://wiki.archlinux.org/title/General_recommendations" rel="noreferrer noopener">General recommendations</a>
       </pre>
    </details>
