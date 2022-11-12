@@ -162,13 +162,13 @@ reboot
       <summary>after install (WIP)</summary>
       <pre>
 cd /etc
-nano /security/limits.conf
+nano security/limits.conf
 {
    * soft nproc 140
    * hard nproc 240
 }
 
-nano /sysctl.d/custom.conf
+nano sysctl.d/custom.conf
 {
    vm.swappiness = 25
    vm.vfs_cache_pressure = 70
@@ -198,7 +198,7 @@ nano /sysctl.d/custom.conf
    kernel.kexec_load_disabled = 1
 }
 
-nano /NetworkManager/conf.d/rand_mac.conf
+nano NetworkManager/conf.d/rand_mac.conf
 {
    [connection-mac-randomization]
 
@@ -206,13 +206,13 @@ nano /NetworkManager/conf.d/rand_mac.conf
    wifi.cloned-mac-address=random
 }
 
-nano /NetworkManager/NetworkManager.conf
+nano NetworkManager/NetworkManager.conf
 {
    [connection]
    ipv6.ip6-privacy=2
 }
 
-nano /makepkg.conf
+nano makepkg.conf
 {
    CFLAGS="-march=native" // delete mtune
    RUSTFLAGS="-O -C target-cpu=native"
@@ -225,15 +225,15 @@ nano /makepkg.conf
 // nmtui // if you need wifi
    
 pacman -Syu opendoas
-nano /doas.conf
+nano doas.conf
 {
    permit :wheel
    permit setenv { XAUTHORITY LANG LC_ALL } :wheel
 
 }
 
-chown -c root:root /doas.conf
-chmod -c 0400 /doas.conf
+chown -c root:root doas.conf
+chmod -c 0400 doas.conf
 
 ln -s $(which doas) /usr/bin/sudo
 
