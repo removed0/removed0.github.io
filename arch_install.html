@@ -103,12 +103,12 @@ swapon &lt;<i>swap_partition</i>&gt;
 pacstrap -K /mnt base linux-zen linux-firmware linux-firmware-qlogic which nano intel-ucode networkmanager
 genfstab -U /mnt &gt;&gt; /mnt/etc/fstab
 
-nano /mnt/etc/fstab
+arch-chroot /mnt
+
+nano /etc/fstab
 {
    the root partition &lt;<i>options</i>&gt; should have noatime,commit=30
 }
-
-arch-chroot /mnt
 
 ln -sf /usr/share/zoneinfo/&lt;<i>Region</i>&gt;/&lt;<i>City</i>&gt; /etc/localtime // zoneinfo/Europe/Bucharest
 hwclock -w
@@ -139,14 +139,14 @@ echo &lt;<i>hostname</i>&gt; &gt; /etc/hostname
 bootctl install
 systemctl enable systemd-boot-update
 
-blkid &lt;<i>root_partition</i>&gt; // Ex. /dev/sda3
+blkid &lt;<i>root_partition</i>&gt; // Ex. /dev/sda3 // open in third tty
 nano /boot/loader/entries/arch.conf
 {
    title   arch linux
    linux   /vmlinuz-linux-zen
    initrd  /intel-ucode.img
    initrd  /initramfs-linux-zen.img
-   options root=&lt;<i>UUID</i>&gt; rw nowatchdog // &lt;<i>UUID</i>&gt; should look like: UUID=6d3376e4-fc93-4509-95ec-a21d68011da2 // add mitigations=off if you want to trade security for performance
+   options root=&lt;<i>UUID</i>&gt; rw nowatchdog // &lt;<i>UUID</i>&gt; being: UUID=random letters with slashes in-between // add mitigations=off if you want to trade security for performance
 }
 
 echo default arch &gt; /boot/loader/loader.conf
@@ -161,13 +161,14 @@ reboot
    <details>
       <summary>after install (WIP)</summary>
       <pre>
-nano /etc/security/limits.conf
+cd /etc
+nano /security/limits.conf
 {
-   * soft nproc 130
-   * hard nproc 230
+   * soft nproc 140
+   * hard nproc 240
 }
 
-nano /etc/sysctl.d/custom.conf
+nano /sysctl.d/custom.conf
 {
    vm.swappiness = 25
    vm.vfs_cache_pressure = 70
@@ -197,7 +198,7 @@ nano /etc/sysctl.d/custom.conf
    kernel.kexec_load_disabled = 1
 }
 
-nano /etc/NetworkManager/conf.d/rand_mac.conf
+nano /NetworkManager/conf.d/rand_mac.conf
 {
    [connection-mac-randomization]
 
@@ -205,13 +206,13 @@ nano /etc/NetworkManager/conf.d/rand_mac.conf
    wifi.cloned-mac-address=random
 }
 
-nano /etc/NetworkManager/NetworkManager.conf
+nano /NetworkManager/NetworkManager.conf
 {
    [connection]
    ipv6.ip6-privacy=2
 }
 
-nano /etc/makepkg.conf
+nano /makepkg.conf
 {
    CFLAGS="-march=native" // delete mtune
    RUSTFLAGS="-O -C target-cpu=native"
@@ -224,15 +225,15 @@ nano /etc/makepkg.conf
 // nmtui // if you need wifi
    
 pacman -Syu opendoas
-nano /etc/doas.conf
+nano /doas.conf
 {
    permit :wheel
    permit setenv { XAUTHORITY LANG LC_ALL } :wheel
 
 }
 
-chown -c root:root /etc/doas.conf
-chmod -c 0400 /etc/doas.conf
+chown -c root:root /doas.conf
+chmod -c 0400 /doas.conf
 
 ln -s $(which doas) /usr/bin/sudo
 
@@ -253,7 +254,7 @@ nano .bashrc
 // always login as normal user
 reboot
 
-sudo pacman -Syu --needed git base-devel rustup // uwufetch
+sudo pacman -S --needed git base-devel rustup // uwufetch
 ^14 // no sudo 
 
 rustup default stable
@@ -293,7 +294,6 @@ cd .config/pipewire
 nano pipewire.conf
 {
    default.clock.allowed-rates = [ 44800 44100 ]
-sud
    on line 242, next to context.exec add: { path = "pactl" args = "load-module module-switch-on-connect" }
 }
 
@@ -312,7 +312,7 @@ nano pipewire-pulse.conf
       </details>
       <h2>bad from here</h2>
       <pre>
-sudo pacman -Syu xorg-server xorg-xinit xfce4 // xfce4-goodies htop bluez code network-manager-applet transmission-gtk
+sudo pacman -S xorg-server xorg-xinit xfce4 // xfce4-goodies htop bluez code network-manager-applet transmission-gtk
 // xfce-goodies ^30 // no task manager
 
 // if you install xf86-video-intel // enables vsync or smth like that
@@ -327,7 +327,7 @@ sudo pacman -Syu xorg-server xorg-xinit xfce4 // xfce4-goodies htop bluez code n
    }
 }
 
-// cd && nano .drirc // BAD // might improve performance // disables vsync??
+// nano ~/.drirc // BAD // might improve performance // disables vsync??
 {
    &lt;driconf&gt;
    &lt;device&gt;
