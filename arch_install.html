@@ -115,7 +115,7 @@ hwclock -w
 
 nano /etc/pacman.conf
 {
-   comment Checkspace // if you have enough space
+   // comment Checkspace // if you have enough space
    uncomment [multilib]
    uncomment Color
    ILoveCandy
@@ -244,8 +244,10 @@ su &lt;<i>username</i>&gt;
 cd
 nano .bashrc
 {
+   shopt -s histappend
    alias ..='cd ..'
    alias cd..='cd ..'
+   alias ....='cd ../..'
    alias sudoedit='doas rnano'
    alias shutdown='shutdown now'
    complete -cf doas
@@ -349,10 +351,12 @@ sudo pacman -S xorg-server xorg-xinit xfce4 // xfce4-goodies htop bluez code net
    EndSection
 }
 
-cd
+reboot
+
+cp /etc/X11/xinit/xinitrc ~/.xinitrc
 nano .xinitrc
 {
-   startxfce4
+   only exec startxfce4 should start
 }
 
 nano .bash_profile
