@@ -149,7 +149,15 @@ nano /boot/loader/entries/arch.conf
    options root=&lt;<i>UUID</i>&gt; rw nowatchdog // &lt;<i>UUID</i>&gt; being: UUID=random letters with slashes in-between // add mitigations=off if you want to trade security for performance
 }
 
-echo default arch &gt; /boot/loader/loader.conf
+cp /boot/loader/entries/arch.conf /boot/loader/entries/archfall.conf
+
+nano /boot/loader/entries/archfall.conf
+{
+   title   arch linux (fallback initramfs)
+   initrd  /initramfs-linux-zen-fallback.img
+}
+
+echo default arch &gt; /boot/loader/loader.conf // hold key during boot to see boot options
       </pre>
    </details>
    <pre>
@@ -174,7 +182,7 @@ nano sysctl.d/custom.conf
    vm.vfs_cache_pressure = 70
    vm.dirty_background_ratio = 5
    vm.dirty_ratio = 4
-   vm.min_free_kbytes = 780000
+   vm.min_free_kbytes = 790000
    tcp_slow_start_after_idle = 0
    net.ipv4.icmp_echo_ignore_all = 1
    net.ipv4.tcp_rfc1337 = 1
@@ -227,8 +235,7 @@ nano makepkg.conf
 pacman -Syu opendoas
 nano doas.conf
 {
-   permit :wheel
-   permit setenv { XAUTHORITY LANG LC_ALL } :wheel
+   permit nopass setenv { XAUTHORITY LANG LC_ALL } :wheel // doesn't ask for root password due to nopass
 
 }
 
@@ -244,17 +251,22 @@ su &lt;<i>username</i>&gt;
 cd
 nano .bashrc
 {
-   shopt -s histappend
    alias ..='cd ..'
    alias cd..='cd ..'
-   alias ....='cd ../..'
+   alias ...='cd ../..'
+   alias cd...='cd ../..'
    alias sudoedit='doas rnano'
    alias shutdown='shutdown now'
+   alias diff='diff --color=auto'
    complete -cf doas
+   bind '"\e[A":history-search-backward'
+   bind '"\e[B":history-search-forward'
+   PS1='\[\e[0m\][\[\e[0;36m\]\u\[\e[0m\]] \[\e[0;33m\]\w \[\e[0m\]\$ \[\e[0m\]'
+
+   export LESS='-R --use-color -Dd+r$Du+b'
 }
 
-// always login as normal user
-reboot
+reboot // always login as normal user
 
 sudo pacman -S --needed git base-devel rustup // uwufetch
 ^14 // no sudo 
@@ -277,8 +289,7 @@ sudo pacman -S intel-media-driver vulkan-intel mesa libva-utils
 reboot
 
 vainfo
-// if it doesn't work you might need to do this
-// sudo echo LIBVA_DRIVER_NAME=iHD >> /etc/environment
+// if it doesn't work you might need to do this: sudo echo LIBVA_DRIVER_NAME=iHD >> /etc/environment
 
 // paru -Rn libva-utils // if you want
       </pre>
@@ -290,23 +301,12 @@ sudo pacman -S pipewire pipewire-{pulse,jack}
 
 mkdir .config
 mkdir .config/pipewire
-cp /usr/share/pipewire/{client,pipewire,pipewire-pulse}.conf .config/pipewire/
+cp /usr/share/pipewire/pipewire.conf .config/pipewire/
 
-cd .config/pipewire
-nano pipewire.conf
+nano .config/pipewire/pipewire.conf
 {
-   default.clock.allowed-rates = [ 44800 44100 ]
+   default.clock.allowed-rates = [ 44800 44100 ] // do pw-top see number add
    on line 242, next to context.exec add: { path = "pactl" args = "load-module module-switch-on-connect" }
-}
-
-nano client.conf
-{
-   resample.quality = 8
-}
-
-nano pipewire-pulse.conf
-{
-   resample.quality = 8
 }
 
 // paru easyeffects // see <a href="https://github.com/jaakkopasanen/AutoEq" rel="norefferer nofollow">AutoEq</a> for collection of ai generated eq presets for headphones // testing
@@ -362,7 +362,7 @@ nano .xinitrc
 nano .bash_profile
 {
    if [ -z "${DISPLAY}" ] && [ "${XDG_VTNR}" -eq 1 ]; then
-      exec startx
+   exec startx
    fi
 }
 
