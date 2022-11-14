@@ -12,7 +12,7 @@
       body {
          background-color: #151515;
          color: white;
-         font-size: larger;
+         font-size: 105%;
       }
       
       details {
@@ -36,15 +36,10 @@
       a:hover {
          text-decoration: underline;
       }
-      
-      span {
-         color: silver;
-      }
    </style>
 </head>
 
 <body>
-   <h2><strong>this is a opinionated arch install command list for a pc with around 16gb of ram and a 2004 or newer intel processor with no graphics card in it</strong></h2>
    <details>
       <summary>preinstallation</summary>
       <pre>
@@ -52,22 +47,23 @@
 download the arch iso and the arch iso pgp signature from <a href="https://archlinux.org/download/" rel="noreferrer noopener">archlinux.org</a>
 
 in the same directory as the iso and signature, verify integrity:
-gpg --keyserver-options auto-key-retrieve --verify archlinux-&lt;<i>version</i>&gt;-x86_64.iso.sig
+$ gpg --keyserver-options auto-key-retrieve --verify archlinux-&lt;<i>version</i>&gt;-x86_64.iso.sig
 
 before installation disable secure boot and set the CMOS clock to UTC
       </pre>
    </details>
    <pre>
+$ ls /sys/firmware/efi/efivars
+if it lists files it means you've booted in UEFI mode, which is needed
+
 to follow this guide in the iso: 
-{
-   press ALT+F2 to go into the second tty
+boot the into the iso and press ALT+F2 to go into the second tty
    {
       lynx removed0.github.io/arch_install.html
    }
    switch back to the first tty: ALT+F1
 } // you have 7 ttys // useful
 
-ls /sys/firmware/efi/efivars // if it lists files it means you've booted in UEFI mode, which is needed
 
 // if you need to connect to wifi // better use wired
 {
@@ -112,15 +108,6 @@ nano /etc/fstab
 
 ln -sf /usr/share/zoneinfo/&lt;<i>Region</i>&gt;/&lt;<i>City</i>&gt; /etc/localtime // zoneinfo/Europe/Bucharest
 hwclock -w
-
-nano /etc/pacman.conf
-{
-   // comment Checkspace // if you have enough space
-   uncomment [multilib]
-   uncomment Color
-   ILoveCandy
-   ParallelDownloads 4
-}
 
 systemctl enable NetworkManager
 
@@ -170,6 +157,16 @@ reboot
       <summary>after install (WIP)</summary>
       <pre>
 cd /etc
+
+nano pacman.conf
+{
+   // comment Checkspace // if you have enough space
+   uncomment [multilib]
+   uncomment Color
+   ILoveCandy
+   ParallelDownloads 4
+}
+
 nano security/limits.conf
 {
    * soft nproc 140
@@ -226,8 +223,8 @@ nano makepkg.conf
    RUSTFLAGS="-O -C target-cpu=native"
    MAKEFLAGS="-j3"
    BUILDDIR=/tmp/makepkg
-   PKGDEST=/home/.mkpkgpackages
-   SRCDEST=/home/.mkpkgsources
+   PKGDEST=/home/mkpkgpackages
+   SRCDEST=/home/mkpkgsources
 }
 
 // nmtui // if you need wifi
@@ -305,7 +302,7 @@ cp /usr/share/pipewire/pipewire.conf .config/pipewire/
 
 nano .config/pipewire/pipewire.conf
 {
-   default.clock.allowed-rates = [ 44800 44100 ] // do pw-top see number add
+   default.clock.allowed-rates = [ 44800 44100 ] // do pw-top see number add, while music
    on line 242, next to context.exec add: { path = "pactl" args = "load-module module-switch-on-connect" }
 }
 
@@ -356,6 +353,7 @@ reboot
 cp /etc/X11/xinit/xinitrc ~/.xinitrc
 nano .xinitrc
 {
+   delete twm, xorg-xclock, xterm lines
    only exec startxfce4 should start
 }
 
