@@ -12,15 +12,7 @@
       body {
          background-color: #151515;
          color: white;
-         font-size: 105%;
-      }
-      
-      details {
-         padding-left: 2px;
-         border-style: solid;
-         border-color: lightgray;
-         border-radius: 3px;
-         border-width: 2px;
+         font-size: 110%;
       }
 
       a:link {
@@ -40,9 +32,10 @@
 </head>
 
 <body>
-   <details>
-      <summary>preinstallation</summary>
-      <pre>
+   <hr>
+   <pre>
+preinstallation
+
 <a href="https://soundcloud.com/removed0" rel="noreferrer noopener">my soundcloud</a>
 download the arch iso and the arch iso pgp signature from <a href="https://archlinux.org/download/" rel="noreferrer noopener">archlinux.org</a>
 
@@ -50,114 +43,139 @@ in the same directory as the iso and signature, verify integrity:
 $ gpg --keyserver-options auto-key-retrieve --verify archlinux-&lt;<i>version</i>&gt;-x86_64.iso.sig
 
 before installation disable secure boot and set the CMOS clock to UTC
-      </pre>
-   </details>
-   <pre>
+   <hr>
+boot into the iso
+
 $ ls /sys/firmware/efi/efivars
 if it lists files it means you've booted in UEFI mode, which is needed
 
-to follow this guide in the iso: 
-boot the into the iso and press ALT+F2 to go into the second tty
-   {
-      lynx removed0.github.io/arch_install.html
-   }
-   switch back to the first tty: ALT+F1
-} // you have 7 ttys // useful
+if you can't use a wired internet connection you can connect to wifi
+$ iwctl
+$ device list
+$ station &lt;<i>device</i>&gt; scan
+$ station &lt;<i>device</i>&gt; get-networks
+$ station &lt;<i>device</i>&gt; connect &lt;<i>network</i>&gt;
+$ exit
 
+to follow this guide in the iso, press ALT+F2 to go into the second tty and then do
+$ lynx removed0.github.io/arch_install.html
+switch back to the first tty using ALT+F1
+you have 7 ttys at your disposal, you can switch to them using ALT+F&lt;<i>number</i>&gt;
 
-// if you need to connect to wifi // better use wired
-{
-   iwctl
-   device list
-   station &lt;<i>device</i>&gt; scan
-   station &lt;<i>device</i>&gt; get-networks
-   station &lt;<i>device</i>&gt; connect &lt;<i>network</i>&gt;
-   exit
-}
+check your internet connection using
+$ ping -c4 archlinux.org
+if it doesn't work, fix it
 
-ping -c4 archlinux.org // if it doesn't work, fix it lmao
+list all storage devices and partitions
+$ lsblk
 
-lsblk
-fdisk &lt;<i>disk</i>&gt;
-   g
-   w
+&lt;<i>disk</i>&gt; is formated like /dev/nvme0n1 or /dev/sda
 
-cfdisk &lt;<i>disk</i>&gt;
-partition 1. 512M, efi system
-partition 2. 8G, swap
-partition 3. rest of disk, linux filesystem
+this makes a new gpt partition table on &lt;<i>disk</i>&gt;, erases all partitions on &lt;<i>disk</i>&gt;
+$ fdisk &lt;<i>disk</i>&gt;
+   g  make partition table
+   w  write changes and exit
 
-lsblk
-mkfs.ext4 &lt;<i>root_partition</i>&gt; // Ex./dev/nvme0n1p3
-mkfs.fat -F32 &lt;<i>efi_partition</i>&gt;
-mkswap &lt;<i>swap_partition</i>&gt;
+use cfdisk to create 3 partitions
+# cfdisk &lt;<i>disk</i>&gt;
+partition 1. 300M, efi system                boot partition, this has the bootloader and the linux kernel
+partition 2. 8G, swap                        swap partition
+partition 3. rest of disk, linux filesystem  normal files
 
-mount &lt;<i>root_partition</i>&gt; /mnt // YOU MUST MOUNT THIS FIRST
-mount --mkdir &lt;<i>efi_partition</i>&gt; /mnt/boot
-swapon &lt;<i>swap_partition</i>&gt;
+this lists the partitions on disk
+# lsblk /dev/&lt;<i>disk</i>&gt;
+these three commands make the partitions
+# mkfs.ext4 &lt;<i>root_partition</i>&gt; // &lt;<i>root_partition</i>&gt; should look like /dev/nvme0n1p3 or /dev/sda1
+# mkfs.fat -F32 &lt;<i>efi_partition</i>&gt;
+# mkswap &lt;<i>swap_partition</i>&gt;
 
-pacstrap -K /mnt base linux-zen linux-firmware linux-firmware-qlogic which nano intel-ucode networkmanager
-genfstab -U /mnt &gt;&gt; /mnt/etc/fstab
+these commands mount the partitions so that we can use them
+# mount &lt;<i>root_partition</i>&gt; /mnt
+# mount --mkdir &lt;<i>efi_partition</i>&gt; /mnt/boot
+# swapon &lt;<i>swap_partition</i>&gt;
+
+this command installs essential packages, such as the kernel, device firmware, tui text editor, processor microcode and a network manager
+# pacstrap -K /mnt base linux-zen linux-firmware linux-firmware-qlogic which nano intel-ucode networkmanager
+
+this command creates the fstab, which contains necessary information to automate the process of mounting partitions
+# genfstab -U /mnt &gt;&gt; /mnt/etc/fstab
 
 arch-chroot /mnt
 
+for better disk performance, delete relatime from the root partition options and add noatime,commit=30, WITH NO SPACE inbetween the options
 nano /etc/fstab
 {
-   the root partition &lt;<i>options</i>&gt; should have noatime,commit=30
+   #  &lt;file system&gt;                     &lt;mount point&gt;       &lt;type&gt;  &lt;options&gt;             &lt;dump&gt; &lt;pass&gt;
+   UUID=5173525b-f631-4652-9088-db2116a46769 /              ext4    defaults,noatime,commit=15 0 1
+                                                                             ^^^^^^^^ relatime was here
 }
 
-ln -sf /usr/share/zoneinfo/&lt;<i>Region</i>&gt;/&lt;<i>City</i>&gt; /etc/localtime // zoneinfo/Europe/Bucharest
-hwclock -w
+sets the localtime
+# ln -sf /usr/share/zoneinfo/&lt;<i>Region</i>&gt;/&lt;<i>City</i>&gt; /etc/localtime
+# hwclock -w                 ^ Ex. zoneinfo/Europe/Bucharest
 
-systemctl enable NetworkManager
+make the network manager start at boot
+# systemctl enable NetworkManager
 
-nano /etc/locale.gen
+uncomment en_US.UTF-8 UTF-8 from /etc/locale.gen
+# nano /etc/locale.gen
 {
-   uncomment en_US.UTF-8 UTF-8
+   en_US.UTF-8 UTF-8
+   ^ # was here
 }
-locale-gen
-echo LANG=en_US.UTF-8 &gt; /etc/locale.conf
 
-echo &lt;<i>hostname</i>&gt; &gt; /etc/hostname
-   </pre>
-   <details>
-      <summary>bootloader</summary>
-      <pre>
-bootctl install
-systemctl enable systemd-boot-update
+idk what this does
+# locale-gen
+# echo LANG=en_US.UTF-8 &gt; /etc/locale.conf
 
-blkid &lt;<i>root_partition</i>&gt; // Ex. /dev/sda3 // open in third tty
-nano /boot/loader/entries/arch.conf
+set computer name
+# echo &lt;<i>hostname</i>&gt; &gt; /etc/hostname
+<hr>
+bootloader
+
+installs the bootloader to /boot
+# bootctl install
+enables bootloader updates
+# systemctl enable systemd-boot-update
+
+in the third tty (ALT+F3) do
+# blkid &lt;<i>root_partition</i>&gt;
+to get the &lt;<i>UUID</i>&gt; of the root partition
+
+then make a file to tell the bootloader about our system
+# nano /boot/loader/entries/arch.conf
 {
    title   arch linux
    linux   /vmlinuz-linux-zen
    initrd  /intel-ucode.img
    initrd  /initramfs-linux-zen.img
-   options root=&lt;<i>UUID</i>&gt; rw nowatchdog // &lt;<i>UUID</i>&gt; being: UUID=random letters with slashes in-between // add mitigations=off if you want to trade security for performance
+   options root=UUID=&lt;<i>UUID</i>&gt; rw nowatchdog // &lt;<i>UUID</i>&gt; being: random letters with slashes in-between // add mitigations=off to the options if you want to trade security for performance
 }
 
-cp /boot/loader/entries/arch.conf /boot/loader/entries/archfall.conf
+duplicate the file, changing the file name...
+# cp /boot/loader/entries/arch.conf /boot/loader/entries/archfall.conf
 
-nano /boot/loader/entries/archfall.conf
+and the name of the entry and the initramfs
+# nano /boot/loader/entries/archfall.conf
 {
    title   arch linux (fallback initramfs)
    initrd  /initramfs-linux-zen-fallback.img
 }
+we do this so that if the system doesn't boot due to a missing module, we can use this, by holding a key during boot we can see this option
 
-echo default arch &gt; /boot/loader/loader.conf // hold key during boot to see boot options
-      </pre>
-   </details>
-   <pre>
+# echo default arch &gt; /boot/loader/loader.conf
 
-passwd // set root password
-exit
-reboot
-   </pre>
-   <details>
-      <summary>after install (WIP)</summary>
-      <pre>
-cd /etc
+set the root password
+# passwd
+exit the chroot environment
+# exit
+reboot into the installed system
+# reboot
+   <hr>
+after install (WIP)
+# cd /etc
 
+speeds up download and makes output more pretty and enables 32bit packages
 nano pacman.conf
 {
    // comment Checkspace // if you have enough space
@@ -167,13 +185,16 @@ nano pacman.conf
    ParallelDownloads 4
 }
 
-nano security/limits.conf
+security, limits the number of open processes, no forkbombs
+to increase the number of allowed processes at a time do: # prlimit --nproc=&lt;<i>number</i>&gt;, &lt;<i>number</i>&gt; being less then 1001
+# nano security/limits.conf
 {
-   * soft nproc 140
-   * hard nproc 240
+   * soft nproc 850
+   * hard nproc 1200
 }
 
-nano sysctl.d/custom.conf
+kernel parameters for better performance
+# nano sysctl.d/custom.conf
 {
    vm.swappiness = 25
    vm.vfs_cache_pressure = 70
@@ -203,7 +224,8 @@ nano sysctl.d/custom.conf
    kernel.kexec_load_disabled = 1
 }
 
-nano NetworkManager/conf.d/rand_mac.conf
+make network manager use random mac for connecting to network, better privacy
+# nano NetworkManager/conf.d/rand_mac.conf
 {
    [connection-mac-randomization]
 
@@ -211,13 +233,15 @@ nano NetworkManager/conf.d/rand_mac.conf
    wifi.cloned-mac-address=random
 }
 
-nano NetworkManager/NetworkManager.conf
+enables ipv6 privacy extensions by default
+# nano NetworkManager/NetworkManager.conf
 {
    [connection]
    ipv6.ip6-privacy=2
 }
 
-nano makepkg.conf
+makes compiliation faster, more optimized apps
+# nano makepkg.conf
 {
    CFLAGS="-march=native" // delete mtune
    RUSTFLAGS="-O -C target-cpu=native"
@@ -227,26 +251,37 @@ nano makepkg.conf
    SRCDEST=/home/mkpkgsources
 }
 
-// nmtui // if you need wifi
-   
-pacman -Syu opendoas
-nano doas.conf
-{
-   permit nopass setenv { XAUTHORITY LANG LC_ALL } :wheel // doesn't ask for root password due to nopass
+if you need to connect to wifi
+# nmtui
+ 
+sudo lightweight replacement
+# pacman -Syu opendoas
 
+allow users in the wheel group to use doas without password (due to nopass options)
+# nano doas.conf
+{
+   permit nopass setenv { XAUTHORITY LANG LC_ALL } :wheel
+// new line at the end
 }
 
-chown -c root:root doas.conf
-chmod -c 0400 doas.conf
+set the correct permisions
+# chown -c root:root doas.conf
+# chmod -c 0400 doas.conf
 
-ln -s $(which doas) /usr/bin/sudo
+make a symbolic link to sudo from doas
+# ln -s $(which doas) /usr/bin/sudo
 
-useradd -m -G wheel &lt;<i>username</i>&gt;
-passwd &lt;<i>username</i>&gt;
-su &lt;<i>username</i>&gt;
+make user, and add it to wheel group
+# useradd -m -G wheel &lt;<i>username</i>&gt;
+set user password
+# passwd &lt;<i>username</i>&gt;
+login to user
+# su &lt;<i>username</i>&gt;
 
-cd
-nano .bashrc
+go to home directory
+# cd
+yes .bashrc
+$ nano .bashrc
 {
    alias ..='cd ..'
    alias cd..='cd ..'
@@ -263,38 +298,47 @@ nano .bashrc
    export LESS='-R --use-color -Dd+r$Du+b'
 }
 
-reboot // always login as normal user
+from now on always login as normal user
+$ reboot
 
-sudo pacman -S --needed git base-devel rustup // uwufetch
-^14 // no sudo 
+install packages for compiling paru (aur helper)
+$ sudo pacman -S --needed git base-devel rustup // uwufetch
+   ^14 // no sudo since we have doas
 
-rustup default stable
-git clone https://aur.archlinux.org/paru.git 
-cd paru
-makepkg -si
+install rust toolchain
+$ rustup default stable
+clone paru
+$ git clone https://aur.archlinux.org/paru.git
+$ cd paru
+make the package and install it
+$ makepkg -si
 
-sudo echo Limit=80 &gt;&gt; /etc/paru.conf
+limit the number of results to 140
+$ sudo echo Limit=70 &gt;&gt; /etc/paru.conf
 
-paru aic94xx-firmware // weird bug if all on same line??? PARU HAS ISSUE WITH MINUS SIGN IN NAME.
-paru wd719x-firmware
-paru upd72020x-fw
-// if mkinitcpio -P not run, run it
+install more firmware
+$ paru aic94xx-firmware // weird bug if all on same line??? PARU HAS ISSUE WITH MINUS SIGN IN NAME.
+$ paru wd719x-firmware
+$ paru upd72020x-fw
+if mkinitcpio -P not run at the end, run it
 
-reboot
+$ reboot
 
-sudo pacman -S intel-media-driver vulkan-intel mesa libva-utils
-reboot
+install gpu drivers
+$ sudo pacman -S intel-media-driver vulkan-intel mesa libva-utils
+$ reboot
 
+check in vaapi works
 vainfo
 // if it doesn't work you might need to do this: sudo echo LIBVA_DRIVER_NAME=iHD >> /etc/environment
 
-// paru -Rn libva-utils // if you want
-      </pre>
-      <details>
-         <summary>audio (WIP)</summary>
-         <pre>
-sudo pacman -S pipewire pipewire-{pulse,jack}
-2 // wireplumber
+you can delete libva-utils if you want: paru -Rn libva-utils
+   <hr>
+audio (WIP)
+
+install audio packages
+$ sudo pacman -S pipewire pipewire-{pulse,jack}
+   2 // wireplumber
 
 mkdir .config
 mkdir .config/pipewire
@@ -307,10 +351,9 @@ nano .config/pipewire/pipewire.conf
 }
 
 // paru easyeffects // see <a href="https://github.com/jaakkopasanen/AutoEq" rel="norefferer nofollow">AutoEq</a> for collection of ai generated eq presets for headphones // testing
-         </pre>
-      </details>
+   <hr>
       <h2>bad from here</h2>
-      <pre>
+
 sudo pacman -S xorg-server xorg-xinit xfce4 // xfce4-goodies htop bluez code network-manager-applet transmission-gtk
 // xfce-goodies ^30 // no task manager
 
@@ -375,8 +418,7 @@ sudo nano /etc/systemd/system/getty@tty1.service.d/autologin.conf
 
 // paru librewolf-bin
 <a href="https://wiki.archlinux.org/title/General_recommendations" rel="noreferrer noopener">General recommendations</a>
-      </pre>
-   </details>
+<hr>
 </body>
 
 </html>
