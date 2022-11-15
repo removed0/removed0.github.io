@@ -10,9 +10,20 @@
    <meta content="arch linuxer" name="description">
    <style>
       body {
-         background-color: #181818;
          color: white;
-         font-size: 106%;
+         background-color: #181818;
+         font-family: monospace;
+         font-size: 116%;
+         margin-left: 1.5mm;
+      }
+
+      hr {
+         background-color: #eee;
+         height: 1px;
+      }
+
+      pre {
+         margin: 1px;
       }
 
       a:link {
@@ -28,454 +39,524 @@
       a:hover {
          text-decoration: underline;
       }
-      
+
       div {
          background-color: black;
-         margin: 0.2mm;
-         padding: 0.7mm;
+         margin-top: 0.63mm;
+         padding: 0.72mm 0.29mm;
+         white-space: pre;
       }
    </style>
 </head>
 
 <body>
-<hr>
-   <pre>   
-<a href="https://soundcloud.com/removed0" rel="noreferrer noopener">my soundcloud</a>
+   <hr>
+   <pre><a href="https://soundcloud.com/removed0" rel="noreferrer noopener">my soundcloud</a>
 preinstallation
 
 download the arch iso and the arch iso pgp signature from <a href="https://archlinux.org/download/" rel="noreferrer noopener">archlinux.org</a>
 
-in the same directory as the iso and signature, verify integrity:
-   </pre>
-   <div>
-# gpg --keyserver-options auto-key-retrieve --verify archlinux-&lt;<i>version</i>&gt;-x86_64.iso.sig
-   </div>
+in the same directory as the iso and signature, verify integrity:</pre>
+   <div>$ gpg --keyserver-options auto-key-retrieve --verify archlinux-&lt;<i>version</i>&gt;-x86_64.iso.sig</div>
    <pre>
 
 before installation disable secure boot and set the CMOS clock to UTC
 <hr>      
 boot into the iso
       </pre>
-      <div>
-# ls /sys/firmware/efi/efivars
-      </div>
-      <pre>
+   <div># ls /sys/firmware/efi/efivars</div>
+   <pre>
 if it lists files it means you've booted in UEFI mode, which is needed
 
-if you can't use a wired internet connection you can connect to wifi
-      </pre>
-      <div>
-# iwctl
+if you can't use a wired internet connection you can connect to wifi</pre>
+   <div># iwctl
 # device list
 # station &lt;<i>device</i>&gt; scan
 # station &lt;<i>device</i>&gt; get-networks
 # station &lt;<i>device</i>&gt; connect &lt;<i>network</i>&gt;
-# exit
-      </div>
-      <pre>
-to follow this guide in the iso, press ALT+F2 to go into the second tty and then do
-      </pre>
-      <div>
-# lynx removed0.github.io/arch_install.html
-      </div>
-      <pre>
+# exit</div>
+   <pre>
+
+to follow this guide in the iso, press ALT+F2 to go into the second tty and then do</pre>
+   <div># lynx removed0.github.io/arch_install.html</div>
+   <pre>
 switch back to the first tty using ALT+F1
 you have 7 ttys at your disposal, you can switch to them using ALT+F&lt;<i>number</i>&gt;
 
-check your internet connection using
-      </pre>
-      <div>
-# ping -c4 archlinux.org
-      </div>
-      <pre>
+check your internet connection using</pre>
+   <div># ping -c4 archlinux.org</div>
+   <pre>
 if it doesn't work, fix it
 
-list all storage devices and partitions
-      </pre>
-      <div>
-# lsblk
-      </div>
-      <pre>
-&lt;<i>disk</i>&gt; is formated like /dev/nvme0n1 or /dev/sda
+list all storage devices and partitions</pre>
+   <div># lsblk</div>
+   <pre>
 
-this makes a new gpt partition table on &lt;<i>disk</i>&gt;, erases all partitions on &lt;<i>disk</i>&gt;
-      </pre>
-      <div>
-# fdisk &lt;<i>disk</i>&gt;
-   g  make partition table
-   w  write changes and exit
-      </div>
-      <pre>
-use cfdisk to create 3 partitions
-      </pre>
-      <div>
-# cfdisk &lt;<i>disk</i>&gt;
-      </div>
-      <pre>
+<span style="font-size: 112%;">&lt;<i>disk</i>&gt; is formated like /dev/nvme0n1 or /dev/sda</span>
+
+this makes a new gpt partition table on &lt;<i>disk</i>&gt;, erases all partitions on &lt;<i>disk</i>&gt;</pre>
+   <div># fdisk &lt;<i>disk</i>&gt;
+      g  // make partition table
+      w  // write changes and exit</div>
+   <pre>
+
+use cfdisk to create 3 partitions</pre>
+   <div># cfdisk &lt;<i>disk</i>&gt;</div>
+   <pre>
 partition 1. 300M, efi system                boot partition, this has the bootloader and the linux kernel
 partition 2. 8G, swap                        swap partition
 partition 3. rest of disk, linux filesystem  normal files
 
-this lists the partitions on disk
-      </pre>
-      <div>
-# lsblk /dev/&lt;<i>disk</i>&gt;
-      </div>
-      <pre>
-these three commands make the partitions
-      </pre>
-      <div>
-# mkfs.ext4 &lt;<i>root_partition</i>&gt; // &lt;<i>root_partition</i>&gt; should look like /dev/nvme0n1p3 or /dev/sda1
+this lists the partitions on disk</pre>
+   <div># lsblk &lt;<i>disk</i>&gt;</div>
+   <pre>
+
+these three commands make the partitions</pre>
+   <div># mkfs.ext4 &lt;<i>root_partition</i>&gt; // <span style="font-size: 112%;">&lt;<i>root_partition</i>&gt; should look like /dev/nvme0n1p3 or /dev/sda1</span>
 # mkfs.fat -F32 &lt;<i>efi_partition</i>&gt;
-# mkswap &lt;<i>swap_partition</i>&gt;
-      </div>
-      <pre>
+# mkswap &lt;<i>swap_partition</i>&gt;</div>
+   <pre>
 
-these commands mount the partitions so that we can use them
-      </pre>
-      <div>
-# mount &lt;<i>root_partition</i>&gt; /mnt
+these commands mount the partitions so that we can use them</pre>
+   <div># mount &lt;<i>root_partition</i>&gt; /mnt
 # mount --mkdir &lt;<i>efi_partition</i>&gt; /mnt/boot
-# swapon &lt;<i>swap_partition</i>&gt;
-      </div>
-      <pre>
+# swapon &lt;<i>swap_partition</i>&gt;</div>
+   <pre>
 
-this command installs essential packages, such as the kernel, device firmware, tui text editor, processor microcode and a network manager
-      </pre>
-      <div>
-# pacstrap -K /mnt base linux-zen linux-firmware linux-firmware-qlogic which nano intel-ucode networkmanager
-      </div>
-      <pre>
-this command creates the fstab, which contains necessary information to automate the process of mounting partitions
-      </pre>
-      <div>
-# genfstab -U /mnt &gt;&gt; /mnt/etc/fstab     
-      </div>
-      <div>   
-# arch-chroot /mnt
-      </div>
-      <pre>
+this command installs essential packages, such as the kernel, device firmware, tui text editor, processor microcode and a network manager</pre>
+   <div># pacstrap -K /mnt base linux-zen linux-firmware linux-firmware-qlogic which nano intel-ucode networkmanager</div>
+   <pre>
 
-for better disk performance, delete relatime from the root partition options and add noatime,commit=30, WITH NO SPACE inbetween the options
-# nano /etc/fstab
+this command creates the fstab, which contains necessary information to automate the process of mounting partitions</pre>
+   <div># genfstab -U /mnt &gt;&gt; /mnt/etc/fstab</div>
+   <div># arch-chroot /mnt</div>
+   <br>
+   <hr>
+   <pre>
+
+for better disk performance, delete relatime from the root partition options and add noatime,commit=30, WITH NO SPACE inbetween the options</pre>
+   <div># nano /etc/fstab
 {
-   #  &lt;file system&gt;                     &lt;mount point&gt;       &lt;type&gt;  &lt;options&gt;             &lt;dump&gt; &lt;pass&gt;
-   UUID=5173525b-f631-4652-9088-db2116a46769 /              ext4    defaults,noatime,commit=15 0 1
-                                                                             ^^^^^^^^ relatime was here
-}
+UUID=5173525b-f631-4652-9088-db2116a46769 / ext4 defaults,noatime,commit=15 0 1
+}                                                         ^^^^^^^^ relatime was here</div>
+   <pre>
 
-sets the localtime
-# ln -sf /usr/share/zoneinfo/&lt;<i>Region</i>&gt;/&lt;<i>City</i>&gt; /etc/localtime
-# hwclock -w                 ^ Ex. zoneinfo/Europe/Bucharest
+sets the localtime</pre>
+   <div># ln -sf /usr/share/zoneinfo/&lt;<i>Region</i>&gt;/&lt;<i>City</i>&gt; /etc/localtime
+# hwclock -w                 ^ Ex. zoneinfo/Europe/Bucharest</div>
+   <pre>
 
-make the network manager start at boot
-# systemctl enable NetworkManager
+make the network manager start at boot</pre>
+   <div># systemctl enable NetworkManager</div>
+   <pre>
 
 uncomment en_US.UTF-8 UTF-8 from /etc/locale.gen
-# nano /etc/locale.gen
+</pre>
+   <div># nano /etc/locale.gen
 {
-   en_US.UTF-8 UTF-8
-   ^ # was here
-}
+en_US.UTF-8 UTF-8
+^ # was here
+}</div>
+   <pre>
 
 idk what this does
-# locale-gen
-# echo LANG=en_US.UTF-8 &gt; /etc/locale.conf
+</pre>
+   <div># locale-gen
+# echo LANG=en_US.UTF-8 &gt; /etc/locale.conf</div>
+   <pre>
 
 set computer name
-# echo &lt;<i>hostname</i>&gt; &gt; /etc/hostname
+</pre>
+   <div># echo &lt;<i>hostname</i>&gt; &gt; /etc/hostname</div>
+   <pre>
    <hr>
 bootloader
 
 installs the bootloader to /boot
-# bootctl install
+</pre>
+   <div># bootctl install</div>
+   <pre>
+
 enables bootloader updates
-# systemctl enable systemd-boot-update
+</pre>
+   <div># systemctl enable systemd-boot-update</div>
+   <pre>
 
 in the third tty (ALT+F3) do
-# blkid &lt;<i>root_partition</i>&gt;
+</pre>
+   <div># blkid &lt;<i>root_partition</i>&gt;</div>
+   <pre>
 to get the &lt;<i>UUID</i>&gt; of the root partition
 
 then make a file to tell the bootloader about our system
-# nano /boot/loader/entries/arch.conf
+</pre>
+   <div># nano /boot/loader/entries/arch.conf
 {
-   title   arch linux
-   linux   /vmlinuz-linux-zen
-   initrd  /intel-ucode.img
-   initrd  /initramfs-linux-zen.img
-   options root=UUID=&lt;<i>UUID</i>&gt; rw nowatchdog // &lt;<i>UUID</i>&gt; being: random letters with slashes in-between // add mitigations=off to the options if you want to trade security for performance
-}
+title arch linux
+linux /vmlinuz-linux-zen
+initrd /intel-ucode.img
+initrd /initramfs-linux-zen.img
+options root=UUID=&lt;<i>UUID</i>&gt; rw nowatchdog // &lt;<i>UUID</i>&gt; being: random letters with slashes in-between // add mitigations=off to the options if you want to trade security for performance
+}</div>
+   <pre>
 
 duplicate the file, changing the file name...
-# cp /boot/loader/entries/arch.conf /boot/loader/entries/archfall.conf
+</pre>
+   <div># cp /boot/loader/entries/arch.conf /boot/loader/entries/archfall.conf</div>
+   <pre>
 
 and the name of the entry and the initramfs
-# nano /boot/loader/entries/archfall.conf
+</pre>
+   <div># nano /boot/loader/entries/archfall.conf
 {
-   title   arch linux (fallback initramfs)
-   initrd  /initramfs-linux-zen-fallback.img
-}
+title arch linux (fallback initramfs)
+initrd /initramfs-linux-zen-fallback.img
+}</div>
+   <pre>
 we do this so that if the system doesn't boot due to a missing module, we can use this, by holding a key during boot we can see this option
 
-# echo default arch &gt; /boot/loader/loader.conf
+</pre>
+   <div># echo default arch &gt; /boot/loader/loader.conf</div>
+   <pre>
 
 set the root password
-# passwd
+</pre>
+   <div># passwd</div>
+   <pre>
 exit the chroot environment
-# exit
+</pre>
+   <div># exit</div>
+   <pre>
 reboot into the installed system
-# reboot
+</pre>
+   <div># reboot</div>
+   <pre>
    <hr>
 after install (WIP)
-# cd /etc
+</pre>
+   <div># cd /etc</div>
+   <pre>
 
 speeds up download and makes output more pretty and enables 32bit packages
-# nano pacman.conf
+</pre>
+   <div># nano pacman.conf
 {
-   // comment Checkspace // if you have enough space
-   uncomment [multilib]
-   uncomment Color
-   ILoveCandy
-   ParallelDownloads 4
-}
+// comment Checkspace // if you have enough space
+uncomment [multilib]
+uncomment Color
+ILoveCandy
+ParallelDownloads 4
+}</div>
+   <pre>
 
 security, limits the number of open processes, no forkbombs
-to increase the number of allowed processes at a time do: # prlimit --nproc=&lt;<i>number</i>&gt;, &lt;<i>number</i>&gt; being less then 1001
-# nano security/limits.conf
+</pre>
+   <div># nano security/limits.conf
 {
-   * soft nproc 850
-   * hard nproc 1200
-}
-if you open a forkbomb, do this
-      <div>
-echo "while [ 1 ]; do killall -STOP &lt;<i>bombprocess</i>&gt; ; done" > killscript.sh
-nice --20 ./killscript.sh
-killall -KILL &lt;<i>bombprocess</i>&gt;
-      </div>
+* soft nproc 840
+* hard nproc 1200
+}</div>
+   <pre>
+
+to increase the number of allowed processes at a time do:</pre>
+   <div>$ prlimit --nproc=&lt;<i>number</i>&gt;, &lt;<i>number</i>&gt; being less then 1201</div>
+   <pre>
+
+if you open a forkbomb, do this</pre>
+   <div>$ echo "while [ 1 ]; do killall -STOP &lt;<i>bombprocess</i>&gt; ; done" > killscript.sh
+$ nice --20 ./killscript.sh
+$ killall -KILL &lt;<i>bombprocess</i>&gt;</div>
+   <pre>
+
 kernel parameters for better performance
-# nano sysctl.d/custom.conf
+</pre>
+   <div># nano sysctl.d/custom.conf
 {
-   vm.swappiness = 25
-   vm.vfs_cache_pressure = 70
-   vm.dirty_background_ratio = 5
-   vm.dirty_ratio = 4
-   vm.min_free_kbytes = 790000
-   tcp_slow_start_after_idle = 0
-   net.ipv4.icmp_echo_ignore_all = 1
-   net.ipv4.tcp_rfc1337 = 1
-   net.ipv4.tcp_fastopen = 3
-   net.ipv4.tcp_mtu_probing = 1       
-   net.ipv4.tcp_keepalive_time = 80
-   net.ipv4.tcp_keepalive_intvl = 10
-   net.ipv4.tcp_keepalive_probes = 4
-   net.ipv4.conf.default.rp_filter = 1
-   net.ipv4.conf.all.rp_filter = 1
-   net.ipv4.conf.all.accept_redirects = 0
-   net.ipv4.conf.default.accept_redirects = 0
-   net.ipv4.conf.all.secure_redirects = 0
-   net.ipv4.conf.default.secure_redirects = 0
-   net.ipv4.conf.all.send_redirects = 0
-   net.ipv4.conf.default.send_redirects = 0
-   net.ipv6.icmp.echo_ignore_all = 1   
-   net.ipv6.conf.all.accept_redirects = 0
-   net.ipv6.conf.default.accept_redirects = 0
-   kernel.kptr_restrict = 2
-   kernel.kexec_load_disabled = 1
-}
+vm.swappiness = 25
+vm.vfs_cache_pressure = 70
+vm.dirty_background_ratio = 5
+vm.dirty_ratio = 4
+vm.min_free_kbytes = 790000
+tcp_slow_start_after_idle = 0
+net.ipv4.icmp_echo_ignore_all = 1
+net.ipv4.tcp_rfc1337 = 1
+net.ipv4.tcp_fastopen = 3
+net.ipv4.tcp_mtu_probing = 1
+net.ipv4.tcp_keepalive_time = 80
+net.ipv4.tcp_keepalive_intvl = 10
+net.ipv4.tcp_keepalive_probes = 4
+net.ipv4.conf.default.rp_filter = 1
+net.ipv4.conf.all.rp_filter = 1
+net.ipv4.conf.all.accept_redirects = 0
+net.ipv4.conf.default.accept_redirects = 0
+net.ipv4.conf.all.secure_redirects = 0
+net.ipv4.conf.default.secure_redirects = 0
+net.ipv4.conf.all.send_redirects = 0
+net.ipv4.conf.default.send_redirects = 0
+net.ipv6.icmp.echo_ignore_all = 1
+net.ipv6.conf.all.accept_redirects = 0
+net.ipv6.conf.default.accept_redirects = 0
+kernel.kptr_restrict = 2
+kernel.kexec_load_disabled = 1
+}</div>
+   <pre>
 
 make network manager use random mac for connecting to network, better privacy
-# nano NetworkManager/conf.d/rand_mac.conf
+</pre>
+   <div># nano NetworkManager/conf.d/rand_mac.conf
 {
-   [connection-mac-randomization]
+[connection-mac-randomization]
 
-   ethernet.cloned-mac-address=random
-   wifi.cloned-mac-address=random
-}
+ethernet.cloned-mac-address=random
+wifi.cloned-mac-address=random
+}</div>
+   <pre>
 
 enables ipv6 privacy extensions by default
-# nano NetworkManager/NetworkManager.conf
+</pre>
+   <div># nano NetworkManager/NetworkManager.conf
 {
-   [connection]
-   ipv6.ip6-privacy=2
-}
+[connection]
+ipv6.ip6-privacy=2
+}</div>
+   <pre>
 
 makes compiliation faster, more optimized apps
-# nano makepkg.conf
+</pre>
+   <div># nano makepkg.conf
 {
-   CFLAGS="-march=native" // delete mtune
-   RUSTFLAGS="-O -C target-cpu=native"
-   MAKEFLAGS="-j3"
-   BUILDDIR=/tmp/makepkg
-   PKGDEST=/home/mkpkgpackages
-   SRCDEST=/home/mkpkgsources
-}
+CFLAGS="-march=native" // delete mtune
+RUSTFLAGS="-O -C target-cpu=native"
+MAKEFLAGS="-j3"
+BUILDDIR=/tmp/makepkg
+PKGDEST=/home/mkpkgpackages
+SRCDEST=/home/mkpkgsources
+}</div>
+   <pre>
 
 if you need to connect to wifi
-# nmtui
- 
+</pre>
+   <div># nmtui</div>
+   <pre>
+
 sudo lightweight replacement
-# pacman -Syu opendoas
+</pre>
+   <div># pacman -Syu opendoas</div>
+   <pre>
 
 allow users in the wheel group to use doas without password (due to nopass options)
-# nano doas.conf
+</pre>
+   <div># nano doas.conf
 {
-   permit nopass setenv { XAUTHORITY LANG LC_ALL } :wheel
+permit nopass setenv { XAUTHORITY LANG LC_ALL } :wheel
 // new line at the end
-}
+}</div>
+   <pre>
 
 set the correct permisions
-# chown -c root:root doas.conf
-# chmod -c 0400 doas.conf
+</pre>
+   <div># chown -c root:root doas.conf
+# chmod -c 0400 doas.conf</div>
+   <pre>
 
 make a symbolic link to sudo from doas
-# ln -s $(which doas) /usr/bin/sudo
+</pre>
+   <div># ln -s $(which doas) /usr/bin/sudo</div>
+   <pre>
 
 make user, and add it to wheel group
-# useradd -m -G wheel &lt;<i>username</i>&gt;
+</pre>
+   <div># useradd -m -G wheel &lt;<i>username</i>&gt;</div>
+   <pre>
 set user password
-# passwd &lt;<i>username</i>&gt;
+</pre>
+   <div># passwd &lt;<i>username</i>&gt;</div>
+   <pre>
 login to user
-# su &lt;<i>username</i>&gt;
+</pre>
+   <div># su &lt;<i>username</i>&gt;</div>
+   <pre>
 
 go to home directory
-$ cd
-yes .bashrc
-$ nano .bashrc
-{
-   alias ..='cd ..'
-   alias cd..='cd ..'
-   alias ...='cd ../..'
-   alias cd...='cd ../..'
-   alias sudoedit='doas rnano'
-   alias shutdown='shutdown now'
-   alias diff='diff --color=auto'
-   complete -cf doas
-   bind '"\e[A":history-search-backward'
-   bind '"\e[B":history-search-forward'
-   PS1='\[\e[0m\][\[\e[0;36m\]\u\[\e[0m\]] \[\e[0;33m\]\w \[\e[0m\]\$ \[\e[0m\]'
+</pre>
+   <div>$ cd</div>
+   <pre>
 
-   export LESS='-R --use-color -Dd+r$Du+b'
-}
+yes .bashrc
+</pre>
+   <div>$ nano .bashrc
+{
+alias ..='cd ..'
+alias cd..='cd ..'
+alias ...='cd ../..'
+alias cd...='cd ../..'
+alias sudoedit='doas rnano'
+alias shutdown='shutdown now'
+alias diff='diff --color=auto'
+complete -cf doas
+bind '"\e[A":history-search-backward'
+bind '"\e[B":history-search-forward'
+PS1='\[\e[0m\][\[\e[0;36m\]\u\[\e[0m\]] \[\e[0;33m\]\w \[\e[0m\]\$ \[\e[0m\]'
+
+export LESS='-R --use-color -Dd+r$Du+b'
+}</div>
+   <pre>
 
 from now on always login as normal user
-$ reboot
+</pre>
+   <div>$ reboot</div>
+   <pre>
 
 install packages for compiling paru (aur helper)
-$ sudo pacman -S --needed git base-devel rustup // uwufetch
-   ^14 // no sudo since we have doas
+</pre>
+   <div>$ sudo pacman -S --needed git base-devel rustup // uwufetch
+^14 // no sudo since we have doas</div>
+   <pre>
 
 install rust toolchain
-$ rustup default stable
+</pre>
+   <div>$ rustup default stable</div>
+   <pre>
+
 clone paru
-$ git clone https://aur.archlinux.org/paru.git
-$ cd paru
+</pre>
+   <div>$ git clone https://aur.archlinux.org/paru.github
+$ cd paru</div>
+   <pre>
+      
 make the package and install it
-$ makepkg -si
+</pre>
+   <div>$ makepkg -si</div>
+   <pre>
 
 limit the number of results to 140
-$ sudo echo Limit=70 &gt;&gt; /etc/paru.conf
+</pre>
+   <div>$ sudo echo Limit=70 &gt;&gt; /etc/paru.conf</div>
+   <pre>
 
 install more firmware
-$ paru aic94xx-firmware // weird bug if all on same line??? PARU HAS ISSUE WITH MINUS SIGN IN NAME.
+</pre>
+   <div>$ paru aic94xx-firmware // weird bug if all on same line??? PARU HAS ISSUE WITH MINUS SIGN IN NAME.
 $ paru wd719x-firmware
-$ paru upd72020x-fw
-if mkinitcpio -P not run at the end, run it
+$ paru upd72020x-fw</div>
+   <pre>
+if $ mkinitcpio -P not run at the end, run it
 
-$ reboot
+</pre>
+   <div>$ reboot</div>
+   <pre>
 
 install gpu drivers
-$ sudo pacman -S intel-media-driver vulkan-intel mesa libva-utils
-$ reboot
+</pre>
+   <div>$ sudo pacman -S intel-media-driver vulkan-intel mesa libva-utils
+$ reboot</div>
+   <pre>
 
 check in vaapi works
-vainfo
+</pre>
+   <div>$ vainfo</div>
+   <pre>
 // if it doesn't work you might need to do this: sudo echo LIBVA_DRIVER_NAME=iHD >> /etc/environment
 
-you can delete libva-utils if you want: paru -Rn libva-utils
+you can delete libva-utils if you want: $ paru -Rn libva-utils
    <hr>
 audio (WIP)
 
 install audio packages
-$ sudo pacman -S pipewire pipewire-{pulse,jack}
-   2 // wireplumber
+</pre>
+   <div>$ sudo pacman -S pipewire pipewire-{pulse,jack}
+2 // wireplumber</div>
+   <pre>
 
-$ mkdir .config
+</pre>
+   <div>$ mkdir .config
 $ mkdir .config/pipewire
 $ cp /usr/share/pipewire/pipewire.conf .config/pipewire/
 
 $ nano .config/pipewire/pipewire.conf
 {
-   default.clock.allowed-rates = [ 44800 44100 ] // do pw-top see number add, while music
-   on line 242, next to context.exec add: { path = "pactl" args = "load-module module-switch-on-connect" }
-}
+default.clock.allowed-rates = [ 44800 44100 ] // do pw-top see number add, while music
+on line 242, next to context.exec add: { path = "pactl" args = "load-module module-switch-on-connect" }
+}</div>
+   <pre>
 
 // $ paru easyeffects // see <a href="https://github.com/jaakkopasanen/AutoEq" rel="norefferer nofollow">AutoEq</a> for collection of ai generated eq presets for headphones // testing
-   <hr>
-   <h2>bad from here</h2>
+   <hr><h2>bad from here</h2>
+</pre>
+   <div>$ sudo pacman -S xorg-server xorg-xinit xfce4 // xfce4-goodies htop bluez code network-manager-applet transmission-gtk
+// xfce-goodies ^30 // no task manager</div>
+   <pre>
 
-$ sudo pacman -S xorg-server xorg-xinit xfce4 // xfce4-goodies htop bluez code network-manager-applet transmission-gtk
-// xfce-goodies ^30 // no task manager
-
-// if you install xf86-video-intel // enables vsync or smth like that
+</pre>
+   <div>// if you install xf86-video-intel // enables vsync or smth like that
 {
    $ nano /etc/X11/xorg.conf.d/20-intel.conf
    {
-      Section "Device"
-      Identifier "Intel Graphics"
-      Driver "intel"
-      Option "TearFree" "true"
-      EndSection
-   }
-}
-
-// $ nano ~/.drirc // BAD // might improve performance // disables vsync??
-{
-   &lt;driconf&gt;
-   &lt;device&gt;
-   &lt;application name="Default"&gt;
-   &lt;option name="vblank_mode" value="0" /&gt;
-   &lt;/application&gt;
-   &lt;/device&gt;
-   &lt;/driconf&gt;
-}
-
-// $ nano /etc/X11/xorg.conf.d/50-mouse-acceleration.conf // disables mouse acceleration
-{
-   Section "InputClass"
-   Identifier "My Mouse"
-   MatchIsPointer "yes"
-   Option "AccelerationProfile" "-1"
-   Option "AccelerationScheme" "none"
-   Option "AccelSpeed" "-1"
+   Section "Device"
+   Identifier "Intel Graphics"
+   Driver "intel"
+   Option "TearFree" "true"
    EndSection
-}
+   }
+}</div>
+   <pre>
 
-$ reboot
+</pre>
+   <div>// $ nano ~/.drirc // BAD // might improve performance // disables vsync??
+{
+&lt;driconf&gt;
+&lt;device&gt;
+&lt;application name="Default"&gt;
+&lt;option name="vblank_mode" value="0" /&gt;
+&lt;/application&gt;
+&lt;/device&gt;
+&lt;/driconf&gt;
+}</div>
+   <pre>
 
-$ cp /etc/X11/xinit/xinitrc ~/.xinitrc
+</pre>
+   <div>// $ nano /etc/X11/xorg.conf.d/50-mouse-acceleration.conf // disables mouse acceleration
+{
+Section "InputClass"
+Identifier "My Mouse"
+MatchIsPointer "yes"
+Option "AccelerationProfile" "-1"
+Option "AccelerationScheme" "none"
+Option "AccelSpeed" "-1"
+EndSection
+}</div>
+   <pre>
+
+</pre>
+   <div>$ reboot</div>
+   <pre>
+
+</pre>
+   <div>$ cp /etc/X11/xinit/xinitrc ~/.xinitrc
 $ nano .xinitrc
 {
-   delete twm, xorg-xclock, xterm lines
-   only exec startxfce4 should start
+delete twm, xorg-xclock, xterm lines
+only exec startxfce4 should start
 }
 
-$ nano .bash_profile
 {
-   if [ -z "${DISPLAY}" ] && [ "${XDG_VTNR}" -eq 1 ]; then
+$ nano .bash_profile
+if [ -z "${DISPLAY}" ] && [ "${XDG_VTNR}" -eq 1 ]; then
    exec startx
-   fi
+fi
 }
 
 $ sudo nano /etc/systemd/system/getty@tty1.service.d/autologin.conf
 {
-   Environment=XDG_SESSION_TYPE=x11
-   Type=simple
-   [Service]
-   ExecStart=
-   ExecStart=-/sbin/agetty -o '-p -f -- \\u' --noclear --autologin &lt;<i>username</i>&gt; %I $TERM
+Environment=XDG_SESSION_TYPE=x11
+Type=simple
+[Service]
+ExecStart=
+ExecStart=-/sbin/agetty -o '-p -f -- \\u' --noclear --autologin &lt;<i>username</i>&gt; %I $TERM
 }
 
-// $ paru librewolf-bin
+// $ paru librewolf-bin</div>
+   <pre>
 <a href="https://wiki.archlinux.org/title/General_recommendations" rel="noreferrer noopener">General recommendations</a>
    <hr>
 </body>
