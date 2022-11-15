@@ -7,12 +7,12 @@
    <title>arch page</title>
    <link href="https://raw.githubusercontent.com/removed0/removed0.github.io/main/media/favicon.ico" rel="shortcut icon">
    <meta content="https://github.com/removed0/" name="author">
-   <meta content="im gonna install arch" name="description">
+   <meta content="arch linuxer" name="description">
    <style>
       body {
-         background-color: #151515;
+         background-color: #181818;
          color: white;
-         font-size: 110%;
+         font-size: 106%;
       }
 
       a:link {
@@ -21,89 +21,143 @@
       }
 
       a:visited {
-         color: #145F14;
+         color: #135E13;
          text-decoration: none;
       }
 
       a:hover {
          text-decoration: underline;
       }
+      
+      div {
+         background-color: black;
+         margin: 0.2mm;
+         padding: 0.7mm;
+      }
    </style>
 </head>
 
 <body>
-   <hr>
-   <pre>
+<hr>
+   <pre>   
+<a href="https://soundcloud.com/removed0" rel="noreferrer noopener">my soundcloud</a>
 preinstallation
 
-<a href="https://soundcloud.com/removed0" rel="noreferrer noopener">my soundcloud</a>
 download the arch iso and the arch iso pgp signature from <a href="https://archlinux.org/download/" rel="noreferrer noopener">archlinux.org</a>
 
 in the same directory as the iso and signature, verify integrity:
-$ gpg --keyserver-options auto-key-retrieve --verify archlinux-&lt;<i>version</i>&gt;-x86_64.iso.sig
+   </pre>
+   <div>
+# gpg --keyserver-options auto-key-retrieve --verify archlinux-&lt;<i>version</i>&gt;-x86_64.iso.sig
+   </div>
+   <pre>
 
 before installation disable secure boot and set the CMOS clock to UTC
-   <hr>
+<hr>      
 boot into the iso
-
-$ ls /sys/firmware/efi/efivars
+      </pre>
+      <div>
+# ls /sys/firmware/efi/efivars
+      </div>
+      <pre>
 if it lists files it means you've booted in UEFI mode, which is needed
 
 if you can't use a wired internet connection you can connect to wifi
-$ iwctl
-$ device list
-$ station &lt;<i>device</i>&gt; scan
-$ station &lt;<i>device</i>&gt; get-networks
-$ station &lt;<i>device</i>&gt; connect &lt;<i>network</i>&gt;
-$ exit
-
+      </pre>
+      <div>
+# iwctl
+# device list
+# station &lt;<i>device</i>&gt; scan
+# station &lt;<i>device</i>&gt; get-networks
+# station &lt;<i>device</i>&gt; connect &lt;<i>network</i>&gt;
+# exit
+      </div>
+      <pre>
 to follow this guide in the iso, press ALT+F2 to go into the second tty and then do
-$ lynx removed0.github.io/arch_install.html
+      </pre>
+      <div>
+# lynx removed0.github.io/arch_install.html
+      </div>
+      <pre>
 switch back to the first tty using ALT+F1
 you have 7 ttys at your disposal, you can switch to them using ALT+F&lt;<i>number</i>&gt;
 
 check your internet connection using
-$ ping -c4 archlinux.org
+      </pre>
+      <div>
+# ping -c4 archlinux.org
+      </div>
+      <pre>
 if it doesn't work, fix it
 
 list all storage devices and partitions
-$ lsblk
-
+      </pre>
+      <div>
+# lsblk
+      </div>
+      <pre>
 &lt;<i>disk</i>&gt; is formated like /dev/nvme0n1 or /dev/sda
 
 this makes a new gpt partition table on &lt;<i>disk</i>&gt;, erases all partitions on &lt;<i>disk</i>&gt;
-$ fdisk &lt;<i>disk</i>&gt;
+      </pre>
+      <div>
+# fdisk &lt;<i>disk</i>&gt;
    g  make partition table
    w  write changes and exit
-
+      </div>
+      <pre>
 use cfdisk to create 3 partitions
+      </pre>
+      <div>
 # cfdisk &lt;<i>disk</i>&gt;
+      </div>
+      <pre>
 partition 1. 300M, efi system                boot partition, this has the bootloader and the linux kernel
 partition 2. 8G, swap                        swap partition
 partition 3. rest of disk, linux filesystem  normal files
 
 this lists the partitions on disk
+      </pre>
+      <div>
 # lsblk /dev/&lt;<i>disk</i>&gt;
+      </div>
+      <pre>
 these three commands make the partitions
+      </pre>
+      <div>
 # mkfs.ext4 &lt;<i>root_partition</i>&gt; // &lt;<i>root_partition</i>&gt; should look like /dev/nvme0n1p3 or /dev/sda1
 # mkfs.fat -F32 &lt;<i>efi_partition</i>&gt;
 # mkswap &lt;<i>swap_partition</i>&gt;
+      </div>
+      <pre>
 
 these commands mount the partitions so that we can use them
+      </pre>
+      <div>
 # mount &lt;<i>root_partition</i>&gt; /mnt
 # mount --mkdir &lt;<i>efi_partition</i>&gt; /mnt/boot
 # swapon &lt;<i>swap_partition</i>&gt;
+      </div>
+      <pre>
 
 this command installs essential packages, such as the kernel, device firmware, tui text editor, processor microcode and a network manager
+      </pre>
+      <div>
 # pacstrap -K /mnt base linux-zen linux-firmware linux-firmware-qlogic which nano intel-ucode networkmanager
-
+      </div>
+      <pre>
 this command creates the fstab, which contains necessary information to automate the process of mounting partitions
-# genfstab -U /mnt &gt;&gt; /mnt/etc/fstab
-
-arch-chroot /mnt
+      </pre>
+      <div>
+# genfstab -U /mnt &gt;&gt; /mnt/etc/fstab     
+      </div>
+      <div>   
+# arch-chroot /mnt
+      </div>
+      <pre>
 
 for better disk performance, delete relatime from the root partition options and add noatime,commit=30, WITH NO SPACE inbetween the options
-nano /etc/fstab
+# nano /etc/fstab
 {
    #  &lt;file system&gt;                     &lt;mount point&gt;       &lt;type&gt;  &lt;options&gt;             &lt;dump&gt; &lt;pass&gt;
    UUID=5173525b-f631-4652-9088-db2116a46769 /              ext4    defaults,noatime,commit=15 0 1
@@ -130,7 +184,7 @@ idk what this does
 
 set computer name
 # echo &lt;<i>hostname</i>&gt; &gt; /etc/hostname
-<hr>
+   <hr>
 bootloader
 
 installs the bootloader to /boot
@@ -176,7 +230,7 @@ after install (WIP)
 # cd /etc
 
 speeds up download and makes output more pretty and enables 32bit packages
-nano pacman.conf
+# nano pacman.conf
 {
    // comment Checkspace // if you have enough space
    uncomment [multilib]
@@ -192,7 +246,12 @@ to increase the number of allowed processes at a time do: # prlimit --nproc=&lt;
    * soft nproc 850
    * hard nproc 1200
 }
-
+if you open a forkbomb, do this
+      <div>
+echo "while [ 1 ]; do killall -STOP &lt;<i>bombprocess</i>&gt; ; done" > killscript.sh
+nice --20 ./killscript.sh
+killall -KILL &lt;<i>bombprocess</i>&gt;
+      </div>
 kernel parameters for better performance
 # nano sysctl.d/custom.conf
 {
@@ -279,7 +338,7 @@ login to user
 # su &lt;<i>username</i>&gt;
 
 go to home directory
-# cd
+$ cd
 yes .bashrc
 $ nano .bashrc
 {
@@ -340,26 +399,26 @@ install audio packages
 $ sudo pacman -S pipewire pipewire-{pulse,jack}
    2 // wireplumber
 
-mkdir .config
-mkdir .config/pipewire
-cp /usr/share/pipewire/pipewire.conf .config/pipewire/
+$ mkdir .config
+$ mkdir .config/pipewire
+$ cp /usr/share/pipewire/pipewire.conf .config/pipewire/
 
-nano .config/pipewire/pipewire.conf
+$ nano .config/pipewire/pipewire.conf
 {
    default.clock.allowed-rates = [ 44800 44100 ] // do pw-top see number add, while music
    on line 242, next to context.exec add: { path = "pactl" args = "load-module module-switch-on-connect" }
 }
 
-// paru easyeffects // see <a href="https://github.com/jaakkopasanen/AutoEq" rel="norefferer nofollow">AutoEq</a> for collection of ai generated eq presets for headphones // testing
+// $ paru easyeffects // see <a href="https://github.com/jaakkopasanen/AutoEq" rel="norefferer nofollow">AutoEq</a> for collection of ai generated eq presets for headphones // testing
    <hr>
-      <h2>bad from here</h2>
+   <h2>bad from here</h2>
 
-sudo pacman -S xorg-server xorg-xinit xfce4 // xfce4-goodies htop bluez code network-manager-applet transmission-gtk
+$ sudo pacman -S xorg-server xorg-xinit xfce4 // xfce4-goodies htop bluez code network-manager-applet transmission-gtk
 // xfce-goodies ^30 // no task manager
 
 // if you install xf86-video-intel // enables vsync or smth like that
 {
-   nano /etc/X11/xorg.conf.d/20-intel.conf
+   $ nano /etc/X11/xorg.conf.d/20-intel.conf
    {
       Section "Device"
       Identifier "Intel Graphics"
@@ -369,7 +428,7 @@ sudo pacman -S xorg-server xorg-xinit xfce4 // xfce4-goodies htop bluez code net
    }
 }
 
-// nano ~/.drirc // BAD // might improve performance // disables vsync??
+// $ nano ~/.drirc // BAD // might improve performance // disables vsync??
 {
    &lt;driconf&gt;
    &lt;device&gt;
@@ -380,7 +439,7 @@ sudo pacman -S xorg-server xorg-xinit xfce4 // xfce4-goodies htop bluez code net
    &lt;/driconf&gt;
 }
 
-// nano /etc/X11/xorg.conf.d/50-mouse-acceleration.conf // disables mouse acceleration
+// $ nano /etc/X11/xorg.conf.d/50-mouse-acceleration.conf // disables mouse acceleration
 {
    Section "InputClass"
    Identifier "My Mouse"
@@ -391,23 +450,23 @@ sudo pacman -S xorg-server xorg-xinit xfce4 // xfce4-goodies htop bluez code net
    EndSection
 }
 
-reboot
+$ reboot
 
-cp /etc/X11/xinit/xinitrc ~/.xinitrc
-nano .xinitrc
+$ cp /etc/X11/xinit/xinitrc ~/.xinitrc
+$ nano .xinitrc
 {
    delete twm, xorg-xclock, xterm lines
    only exec startxfce4 should start
 }
 
-nano .bash_profile
+$ nano .bash_profile
 {
    if [ -z "${DISPLAY}" ] && [ "${XDG_VTNR}" -eq 1 ]; then
    exec startx
    fi
 }
 
-sudo nano /etc/systemd/system/getty@tty1.service.d/autologin.conf
+$ sudo nano /etc/systemd/system/getty@tty1.service.d/autologin.conf
 {
    Environment=XDG_SESSION_TYPE=x11
    Type=simple
@@ -416,9 +475,9 @@ sudo nano /etc/systemd/system/getty@tty1.service.d/autologin.conf
    ExecStart=-/sbin/agetty -o '-p -f -- \\u' --noclear --autologin &lt;<i>username</i>&gt; %I $TERM
 }
 
-// paru librewolf-bin
+// $ paru librewolf-bin
 <a href="https://wiki.archlinux.org/title/General_recommendations" rel="noreferrer noopener">General recommendations</a>
-<hr>
+   <hr>
 </body>
 
 </html>
