@@ -61,7 +61,9 @@ in the same directory as the iso and signature, verify integrity:</pre>
    <pre>
 
 before installation disable secure boot and set the CMOS clock to UTC
-<hr>      
+   </pre>
+<hr>
+   <pre>     
 boot into the iso
       </pre>
    <div># ls /sys/firmware/efi/efivars</div>
@@ -168,8 +170,8 @@ idk what this does
 set computer name
 </pre>
    <div># echo &lt;<i>hostname</i>&gt; &gt; /etc/hostname</div>
-   <pre>
    <hr>
+   <pre>
 bootloader
 
 installs the bootloader to /boot
@@ -230,8 +232,8 @@ exit the chroot environment
 reboot into the installed system
 </pre>
    <div># reboot</div>
-   <pre>
    <hr>
+   <pre>
 after install (WIP)
 </pre>
    <div># cd /etc</div>
@@ -459,7 +461,9 @@ check in vaapi works
 // if it doesn't work you might need to do this: sudo echo LIBVA_DRIVER_NAME=iHD >> /etc/environment
 
 you can delete libva-utils if you want: $ paru -Rn libva-utils
+   </pre>
    <hr>
+   <pre>
 audio (WIP)
 
 install audio packages
@@ -481,7 +485,7 @@ on line 242, next to context.exec add: { path = "pactl" args = "load-module modu
    <pre>
 
 // $ paru easyeffects // see <a href="https://github.com/jaakkopasanen/AutoEq" rel="norefferer nofollow">AutoEq</a> for collection of ai generated eq presets for headphones // testing
-   <hr><h2>bad from here</h2>
+   </pre><hr><h2>bad from here</h2><pre>
 </pre>
    <div>$ sudo pacman -S xorg-server xorg-xinit xfce4 // xfce4-goodies htop bluez code network-manager-applet transmission-gtk
 // xfce-goodies ^30 // no task manager</div>
@@ -558,6 +562,7 @@ ExecStart=-/sbin/agetty -o '-p -f -- \\u' --noclear --autologin &lt;<i>username<
 // $ paru librewolf-bin</div>
    <pre>
 <a href="https://wiki.archlinux.org/title/General_recommendations" rel="noreferrer noopener">General recommendations</a>
+   </pre>
    <hr>
 </body>
 
