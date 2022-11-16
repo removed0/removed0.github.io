@@ -27,12 +27,12 @@
       }
 
       a:link {
-         color: green;
+         color: #009000;
          text-decoration: none;
       }
 
       a:visited {
-         color: #135E13;
+         color: #106e10;
          text-decoration: none;
       }
 
@@ -46,6 +46,10 @@
          padding: 0.72mm 0.29mm;
          white-space: pre;
       }
+
+      span {
+         font-size: 112%;
+      }
    </style>
 </head>
 
@@ -57,11 +61,11 @@ preinstallation
 download the arch iso and the arch iso pgp signature from <a href="https://archlinux.org/download/" rel="noreferrer noopener">archlinux.org</a>
 
 in the same directory as the iso and signature, verify integrity:</pre>
-   <div>$ gpg --keyserver-options auto-key-retrieve --verify archlinux-&lt;<i>version</i>&gt;-x86_64.iso.sig</div>
+   <div>$ gpg --keyserver-options auto-key-retrieve --verify archlinux-<i>&lt;version&gt;</i>-x86_64.iso.sig</div>
    <pre>
 
 before installation disable secure boot and set the CMOS clock to UTC
-   </pre>
+if you see something in <i>italics</i>, you have to change it in relation with your system</pre>
 <hr>
    <pre>     
 boot into the iso
@@ -73,9 +77,9 @@ if it lists files it means you've booted in UEFI mode, which is needed
 if you can't use a wired internet connection you can connect to wifi</pre>
    <div># iwctl
 # device list
-# station &lt;<i>device</i>&gt; scan
-# station &lt;<i>device</i>&gt; get-networks
-# station &lt;<i>device</i>&gt; connect &lt;<i>network</i>&gt;
+# station <i>&lt;device&gt;</i> scan
+# station <i>&lt;device&gt;</i> get-networks
+# station <i>&lt;device&gt;</i> connect <i>&lt;network&gt;</i>
 # exit</div>
    <pre>
 
@@ -83,7 +87,7 @@ to follow this guide in the iso, press ALT+F2 to go into the second tty and then
    <div># lynx removed0.github.io/arch_install.html</div>
    <pre>
 switch back to the first tty using ALT+F1
-you have 7 ttys at your disposal, you can switch to them using ALT+F&lt;<i>number</i>&gt;
+you have 7 ttys at your disposal, you can switch to them using ALT+F<i>&lt;number&gt;</i>
 
 check your internet connection using</pre>
    <div># ping -c4 archlinux.org</div>
@@ -94,35 +98,35 @@ list all storage devices and partitions</pre>
    <div># lsblk</div>
    <pre>
 
-<span style="font-size: 112%;">&lt;<i>disk</i>&gt; is formated like /dev/nvme0n1 or /dev/sda</span>
+<span><i>&lt;disk&gt;</i> is formated like /dev/nvme0n1 or /dev/sda</span>
 
-this makes a new gpt partition table on &lt;<i>disk</i>&gt;, erases all partitions on &lt;<i>disk</i>&gt;</pre>
-   <div># fdisk &lt;<i>disk</i>&gt;
+this makes a new gpt partition table on <i>&lt;disk&gt;</i>, erases all partitions on <i>&lt;disk&gt;</i></pre>
+   <div># fdisk <i>&lt;disk&gt;</i>
       g  // make partition table
       w  // write changes and exit</div>
    <pre>
 
 use cfdisk to create 3 partitions</pre>
-   <div># cfdisk &lt;<i>disk</i>&gt;</div>
+   <div># cfdisk <i>&lt;disk&gt;</i></div>
    <pre>
 partition 1. 300M, efi system                boot partition, this has the bootloader and the linux kernel
 partition 2. 8G, swap                        swap partition
 partition 3. rest of disk, linux filesystem  normal files
 
 this lists the partitions on disk</pre>
-   <div># lsblk &lt;<i>disk</i>&gt;</div>
+   <div># lsblk <i>&lt;disk&gt;</i></div>
    <pre>
 
 these three commands make the partitions</pre>
-   <div># mkfs.ext4 &lt;<i>root_partition</i>&gt; // <span style="font-size: 112%;">&lt;<i>root_partition</i>&gt; should look like /dev/nvme0n1p3 or /dev/sda1</span>
-# mkfs.fat -F32 &lt;<i>efi_partition</i>&gt;
-# mkswap &lt;<i>swap_partition</i>&gt;</div>
+   <div># mkfs.ext4 <i>&lt;root_partition&gt;</i> // <span><i>&lt;root_partition&gt;</i> should look like /dev/nvme0n1p3 or /dev/sda1</span>
+# mkfs.fat -F32 <i>&lt;efi_partition&gt;</i>
+# mkswap <i>&lt;swap_partition&gt;</i></div>
    <pre>
 
 these commands mount the partitions so that we can use them</pre>
-   <div># mount &lt;<i>root_partition</i>&gt; /mnt
-# mount --mkdir &lt;<i>efi_partition</i>&gt; /mnt/boot
-# swapon &lt;<i>swap_partition</i>&gt;</div>
+   <div># mount <i>&lt;root_partition&gt;</i> /mnt
+# mount --mkdir <i>&lt;efi_partition&gt;</i> /mnt/boot
+# swapon <i>&lt;swap_partition&gt;</i></div>
    <pre>
 
 this command installs essential packages, such as the kernel, device firmware, tui text editor, processor microcode and a network manager</pre>
@@ -131,20 +135,20 @@ this command installs essential packages, such as the kernel, device firmware, t
 
 this command creates the fstab, which contains necessary information to automate the process of mounting partitions</pre>
    <div># genfstab -U /mnt &gt;&gt; /mnt/etc/fstab</div>
-   <div># arch-chroot /mnt</div>
    <br>
+   <div># arch-chroot /mnt</div>
    <hr>
    <pre>
 
 for better disk performance, delete relatime from the root partition options and add noatime,commit=30, WITH NO SPACE inbetween the options</pre>
    <div># nano /etc/fstab
 {
-UUID=5173525b-f631-4652-9088-db2116a46769 / ext4 defaults,noatime,commit=15 0 1
+UUID=5173525b-f631-4652-9088-db2116a46769 / ext4 defaults,noatime,commit=30 0 1
 }                                                         ^^^^^^^^ relatime was here</div>
    <pre>
 
 sets the localtime</pre>
-   <div># ln -sf /usr/share/zoneinfo/&lt;<i>Region</i>&gt;/&lt;<i>City</i>&gt; /etc/localtime
+   <div># ln -sf /usr/share/zoneinfo/<i>&lt;Region&gt;</i>/<i>&lt;City&gt;</i> /etc/localtime
 # hwclock -w                 ^ Ex. zoneinfo/Europe/Bucharest</div>
    <pre>
 
@@ -169,9 +173,10 @@ idk what this does
 
 set computer name
 </pre>
-   <div># echo &lt;<i>hostname</i>&gt; &gt; /etc/hostname</div>
+   <div># echo <i>&lt;hostname&gt;</i> &gt; /etc/hostname</div>
    <hr>
    <pre>
+
 bootloader
 
 installs the bootloader to /boot
@@ -186,9 +191,9 @@ enables bootloader updates
 
 in the third tty (ALT+F3) do
 </pre>
-   <div># blkid &lt;<i>root_partition</i>&gt;</div>
+   <div># blkid <i>&lt;root_partition&gt;</i></div>
    <pre>
-to get the &lt;<i>UUID</i>&gt; of the root partition
+to get the <i>&lt;UUID&gt;</i> of the root partition
 
 then make a file to tell the bootloader about our system
 </pre>
@@ -198,7 +203,7 @@ title arch linux
 linux /vmlinuz-linux-zen
 initrd /intel-ucode.img
 initrd /initramfs-linux-zen.img
-options root=UUID=&lt;<i>UUID</i>&gt; rw nowatchdog // &lt;<i>UUID</i>&gt; being: random letters with slashes in-between // add mitigations=off to the options if you want to trade security for performance
+options root=UUID=<i>&lt;UUID&gt;</i> rw nowatchdog // <i>&lt;UUID&gt;</i> being: random letters with slashes in-between // add mitigations=off to the options if you want to trade security for performance
 }</div>
    <pre>
 
@@ -234,7 +239,9 @@ reboot into the installed system
    <div># reboot</div>
    <hr>
    <pre>
+
 after install (WIP)
+
 </pre>
    <div># cd /etc</div>
    <pre>
@@ -261,13 +268,13 @@ security, limits the number of open processes, no forkbombs
    <pre>
 
 to increase the number of allowed processes at a time do:</pre>
-   <div>$ sudo prlimit --nproc=&lt;<i>number</i>&gt;, &lt;<i>number</i>&gt; being less then 1201</div>
+   <div>$ sudo prlimit --nproc=<i>&lt;number&gt;</i>, <i>&lt;number&gt;</i> being less then 1201</div>
    <pre>
 
 if you open a forkbomb, do this</pre>
-   <div>$ echo "while [ 1 ]; do killall -STOP &lt;<i>bombprocess</i>&gt; ; done" > killscript.sh
+   <div>$ echo "while [ 1 ]; do killall -STOP <i>&lt;bombprocess&gt;</i> ; done" > killscript.sh
 $ nice --20 ./killscript.sh
-$ killall -KILL &lt;<i>bombprocess</i>&gt;</div>
+$ killall -KILL <i>&lt;bombprocess&gt;</i></div>
    <pre>
 
 kernel parameters for better performance
@@ -368,15 +375,15 @@ make a symbolic link to sudo from doas
 
 make user, and add it to wheel group
 </pre>
-   <div># useradd -m -G wheel &lt;<i>username</i>&gt;</div>
+   <div># useradd -m -G wheel <i>&lt;username&gt;</i></div>
    <pre>
 set user password
 </pre>
-   <div># passwd &lt;<i>username</i>&gt;</div>
+   <div># passwd <i>&lt;username&gt;</i></div>
    <pre>
 login to user
 </pre>
-   <div># su &lt;<i>username</i>&gt;</div>
+   <div># su <i>&lt;username&gt;</i></div>
    <pre>
 
 go to home directory
@@ -460,10 +467,10 @@ check in vaapi works
    <pre>
 // if it doesn't work you might need to do this: sudo echo LIBVA_DRIVER_NAME=iHD >> /etc/environment
 
-you can delete libva-utils if you want: $ paru -Rn libva-utils
-   </pre>
-   <hr>
+you can delete libva-utils if you want: $ paru -Rn libva-utils</pre>
+<hr>
    <pre>
+
 audio (WIP)
 
 install audio packages
@@ -475,8 +482,10 @@ install audio packages
 </pre>
    <div>$ mkdir .config
 $ mkdir .config/pipewire
-$ cp /usr/share/pipewire/pipewire.conf .config/pipewire/
+$ cp /usr/share/pipewire/pipewire.conf .config/pipewire/</div><pre>
 
+adjust config to avoid resampling and auto switch on device connect</pre>
+<div>
 $ nano .config/pipewire/pipewire.conf
 {
 default.clock.allowed-rates = [ 44800 44100 ] // do pw-top see number add, while music
@@ -484,15 +493,16 @@ on line 242, next to context.exec add: { path = "pactl" args = "load-module modu
 }</div>
    <pre>
 
-// $ paru easyeffects // see <a href="https://github.com/jaakkopasanen/AutoEq" rel="norefferer nofollow">AutoEq</a> for collection of ai generated eq presets for headphones // testing
-   </pre><hr><h2>bad from here</h2><pre>
+// $ paru easyeffects // see <a href="https://github.com/jaakkopasanen/AutoEq" rel="norefferer nofollow">AutoEq</a> for collection of ai generated eq presets for headphones // testing</pre>
+<hr><h2>bad from here</h2><pre>
 </pre>
-   <div>$ sudo pacman -S xorg-server xorg-xinit xfce4 // xfce4-goodies htop bluez code network-manager-applet transmission-gtk
-// xfce-goodies ^30 // no task manager</div>
+   <pre>
+install x11 server and xfce(desktop environment)</pre>
+   <div>$ sudo pacman -S xorg-server xorg-xinit xfce4 // htop bluez code network-manager-applet transmission-gtk</div>
    <pre>
 
-</pre>
-   <div>// if you install xf86-video-intel // enables vsync or smth like that
+enables vsync or smth like that</pre>
+   <div>// if you install xf86-video-intel 
 {
    $ nano /etc/X11/xorg.conf.d/20-intel.conf
    {
@@ -505,8 +515,8 @@ on line 242, next to context.exec add: { path = "pactl" args = "load-module modu
 }</div>
    <pre>
 
-</pre>
-   <div>// $ nano ~/.drirc // BAD // might improve performance // disables vsync??
+might improve performance, disables vsync??</pre>
+   <div>// $ nano ~/.drirc
 {
 &lt;driconf&gt;
 &lt;device&gt;
@@ -518,8 +528,8 @@ on line 242, next to context.exec add: { path = "pactl" args = "load-module modu
 }</div>
    <pre>
 
-</pre>
-   <div>// $ nano /etc/X11/xorg.conf.d/50-mouse-acceleration.conf // disables mouse acceleration
+disables mouse acceleration</pre>
+   <div>// $ nano /etc/X11/xorg.conf.d/50-mouse-acceleration.conf
 {
 Section "InputClass"
 Identifier "My Mouse"
@@ -535,34 +545,31 @@ EndSection
    <div>$ reboot</div>
    <pre>
 
-</pre>
+make xfce start on startx</pre>
    <div>$ cp /etc/X11/xinit/xinitrc ~/.xinitrc
 $ nano .xinitrc
 {
 delete twm, xorg-xclock, xterm lines
 only exec startxfce4 should start
 }
+   </div><pre>
 
-{
-$ nano .bash_profile
+startx on login</pre><div>$ nano .bash_profile
 if [ -z "${DISPLAY}" ] && [ "${XDG_VTNR}" -eq 1 ]; then
    exec startx
-fi
-}
+fi</div><pre>
 
-$ sudo nano /etc/systemd/system/getty@tty1.service.d/autologin.conf
+autologin into <i>&lt;username&gt;</i></pre><div>$ sudo nano /etc/systemd/system/getty@tty1.service.d/autologin.conf
 {
 Environment=XDG_SESSION_TYPE=x11
 Type=simple
 [Service]
 ExecStart=
-ExecStart=-/sbin/agetty -o '-p -f -- \\u' --noclear --autologin &lt;<i>username</i>&gt; %I $TERM
-}
+ExecStart=-/sbin/agetty -o '-p -f -- \\u' --noclear --autologin <i>&lt;username&gt;</i> %I $TERM
+}</div><pre>
 
-// $ paru librewolf-bin</div>
-   <pre>
-<a href="https://wiki.archlinux.org/title/General_recommendations" rel="noreferrer noopener">General recommendations</a>
-   </pre>
+// $ paru librewolf-bin // good browser
+<a href="https://wiki.archlinux.org/title/General_recommendations" rel="noreferrer noopener">General recommendations</a></pre>
    <hr>
 </body>
 
