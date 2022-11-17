@@ -11,7 +11,7 @@
    <style>
       body {
          color: white;
-         background-color: #181818;
+         background-color: #202020;
          font-family: monospace;
          font-size: 116%;
          margin-left: 1.5mm;
@@ -336,10 +336,10 @@ makes compiliation faster, more optimized apps
 {
 CFLAGS="-march=native" // delete mtune
 RUSTFLAGS="-O -C target-cpu=native"
-MAKEFLAGS="-j3"
-BUILDDIR=/tmp/makepkg
-PKGDEST=/home/mkpkgpackages
-SRCDEST=/home/mkpkgsources
+MAKEFLAGS="-j2" // j3 if you want faster compilation, but other stuff are slower
+BUILDDIR=/tmp/makepkg       // maybe
+PKGDEST=/home/mkpkgpackages // maybe
+SRCDEST=/home/mkpkgsources  // maybe
 }</div>
    <pre>
 
