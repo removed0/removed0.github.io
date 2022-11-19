@@ -142,9 +142,8 @@ this command creates the fstab, which contains necessary information to automate
 
 for better disk performance, delete relatime from the root partition options and add noatime,commit=30, WITH NO SPACE inbetween the options</pre>
    <div># nano /etc/fstab
-{
 UUID=5173525b-f631-4652-9088-db2116a46769 / ext4 defaults,noatime,commit=30 0 1
-}                                                         ^^^^^^^^ relatime was here</div>
+                                                         ^^^^^^^^ relatime was here</div>
    <pre>
 
 sets the localtime</pre>
@@ -159,10 +158,10 @@ make the network manager start at boot</pre>
 uncomment en_US.UTF-8 UTF-8 from /etc/locale.gen
 </pre>
    <div># nano /etc/locale.gen
-{
+
 en_US.UTF-8 UTF-8
 ^ # was here
-}</div>
+</div>
    <pre>
 
 idk what this does
@@ -198,13 +197,12 @@ to get the <i>&lt;UUID&gt;</i> of the root partition
 then make a file to tell the bootloader about our system
 </pre>
    <div># nano /boot/loader/entries/arch.conf
-{
 title arch linux
 linux /vmlinuz-linux-zen
 initrd /intel-ucode.img
 initrd /initramfs-linux-zen.img
 options root=UUID=<i>&lt;UUID&gt;</i> rw nowatchdog // <i>&lt;UUID&gt;</i> being: random letters with slashes in-between // add mitigations=off to the options if you want to trade security for performance
-}</div>
+</div>
    <pre>
 
 duplicate the file, changing the file name...
@@ -215,10 +213,10 @@ duplicate the file, changing the file name...
 and the name of the entry and the initramfs
 </pre>
    <div># nano /boot/loader/entries/archfall.conf
-{
+
 title arch linux (fallback initramfs)
 initrd /initramfs-linux-zen-fallback.img
-}</div>
+</div>
    <pre>
 we do this so that if the system doesn't boot due to a missing module, we can use this, by holding a key during boot we can see this option
 
@@ -249,22 +247,20 @@ after install (WIP)
 speeds up download and makes output more pretty and enables 32bit packages
 </pre>
    <div># nano pacman.conf
-{
 // comment Checkspace // if you have enough space
 uncomment [multilib]
 uncomment Color
 ILoveCandy
 ParallelDownloads 4
-}</div>
+</div>
    <pre>
 
 security, limits the number of open processes, no forkbombs
 </pre>
    <div># nano security/limits.conf
-{
 * soft nproc 840
 * hard nproc 1200
-}</div>
+</div>
    <pre>
 
 to increase the number of allowed processes at a time do:</pre>
@@ -280,12 +276,11 @@ $ killall -KILL <i>&lt;bombprocess&gt;</i></div>
 kernel parameters for better performance
 </pre>
    <div># nano sysctl.d/custom.conf
-{
 vm.swappiness = 25
 vm.vfs_cache_pressure = 70
-vm.dirty_background_ratio = 5
-vm.dirty_ratio = 4
-vm.min_free_kbytes = 790000
+// vm.dirty_background_ratio = 5
+// vm.dirty_ratio = 4
+/ vm.min_free_kbytes = 790000
 tcp_slow_start_after_idle = 0
 net.ipv4.icmp_echo_ignore_all = 1
 net.ipv4.tcp_rfc1337 = 1
@@ -307,40 +302,34 @@ net.ipv6.conf.all.accept_redirects = 0
 net.ipv6.conf.default.accept_redirects = 0
 kernel.kptr_restrict = 2
 kernel.kexec_load_disabled = 1
-}</div>
+</div>
    <pre>
 
 make network manager use random mac for connecting to network, better privacy
 </pre>
    <div># nano NetworkManager/conf.d/rand_mac.conf
-{
 [connection-mac-randomization]
 
 ethernet.cloned-mac-address=random
 wifi.cloned-mac-address=random
-}</div>
+</div>
    <pre>
 
 enables ipv6 privacy extensions by default
 </pre>
-   <div># nano NetworkManager/NetworkManager.conf
-{
+   <div># nano /etc/NetworkManager/conf.d/ip6-privacy.conf
+
 [connection]
-ipv6.ip6-privacy=2
-}</div>
+ipv6.ip6-privacy=2</div>
    <pre>
 
 makes compiliation faster, more optimized apps
 </pre>
    <div># nano makepkg.conf
-{
 CFLAGS="-march=native" // delete mtune
 RUSTFLAGS="-O -C target-cpu=native"
 MAKEFLAGS="-j2" // j3 if you want faster compilation, but other stuff are slower
-BUILDDIR=/tmp/makepkg       // maybe
-PKGDEST=/home/mkpkgpackages // maybe
-SRCDEST=/home/mkpkgsources  // maybe
-}</div>
+</div>
    <pre>
 
 if you need to connect to wifi
@@ -356,10 +345,9 @@ sudo lightweight replacement
 allow users in the wheel group to use doas without password (due to nopass options)
 </pre>
    <div># nano doas.conf
-{
 permit nopass setenv { XAUTHORITY LANG LC_ALL } :wheel
 // new line at the end
-}</div>
+</div>
    <pre>
 
 set the correct permisions
@@ -394,7 +382,6 @@ go to home directory
 yes .bashrc
 </pre>
    <div>$ nano .bashrc
-{
 alias ..='cd ..'
 alias cd..='cd ..'
 alias ...='cd ../..'
@@ -408,7 +395,7 @@ bind '"\e[B":history-search-forward'
 PS1='\[\e[0m\][\[\e[0;36m\]\u\[\e[0m\]] \[\e[0;33m\]\w \[\e[0m\]\$ \[\e[0m\]'
 
 export LESS='-R --use-color -Dd+r$Du+b'
-}</div>
+</div>
    <pre>
 
 from now on always login as normal user
@@ -457,7 +444,7 @@ if $ mkinitcpio -P not run at the end, run it
 
 install gpu drivers
 </pre>
-   <div>$ sudo pacman -S intel-media-driver vulkan-intel mesa libva-utils
+   <div>$ sudo pacman -S intel-media-driver vulkan-intel mesa // libva-utils // xf86-video-intel
 $ reboot</div>
    <pre>
 
@@ -485,12 +472,10 @@ $ mkdir .config/pipewire
 $ cp /usr/share/pipewire/pipewire.conf .config/pipewire/</div><pre>
 
 adjust config to avoid resampling and auto switch on device connect</pre>
-<div>
-$ nano .config/pipewire/pipewire.conf
-{
+<div>$ nano .config/pipewire/pipewire.conf
 default.clock.allowed-rates = [ 44800 44100 ] // do pw-top see number add, while music
 on line 242, next to context.exec add: { path = "pactl" args = "load-module module-switch-on-connect" }
-}</div>
+</div>
    <pre>
 
 // $ paru easyeffects // see <a href="https://github.com/jaakkopasanen/AutoEq" rel="norefferer nofollow">AutoEq</a> for collection of ai generated eq presets for headphones // testing</pre>
@@ -498,11 +483,11 @@ on line 242, next to context.exec add: { path = "pactl" args = "load-module modu
 </pre>
    <pre>
 install x11 server and xfce(desktop environment)</pre>
-   <div>$ sudo pacman -S xorg-server xorg-xinit xfce4 // htop bluez code network-manager-applet transmission-gtk</div>
+   <div>$ sudo pacman -S xorg-server xorg-xinit xfce4 xfce4-goodies bluez // htop code network-manager-applet transmission-gtk</div>
    <pre>
 
 enables vsync or smth like that</pre>
-   <div>// if you install xf86-video-intel 
+   <div>// if you install xf86-video-intel
 {
    $ nano /etc/X11/xorg.conf.d/20-intel.conf
    {
@@ -517,7 +502,6 @@ enables vsync or smth like that</pre>
 
 might improve performance, disables vsync??</pre>
    <div>// $ nano ~/.drirc
-{
 &lt;driconf&gt;
 &lt;device&gt;
 &lt;application name="Default"&gt;
@@ -525,12 +509,11 @@ might improve performance, disables vsync??</pre>
 &lt;/application&gt;
 &lt;/device&gt;
 &lt;/driconf&gt;
-}</div>
+</div>
    <pre>
 
 disables mouse acceleration</pre>
    <div>// $ nano /etc/X11/xorg.conf.d/50-mouse-acceleration.conf
-{
 Section "InputClass"
 Identifier "My Mouse"
 MatchIsPointer "yes"
@@ -538,7 +521,7 @@ Option "AccelerationProfile" "-1"
 Option "AccelerationScheme" "none"
 Option "AccelSpeed" "-1"
 EndSection
-}</div>
+</div>
    <pre>
 
 </pre>
@@ -548,10 +531,8 @@ EndSection
 make xfce start on startx</pre>
    <div>$ cp /etc/X11/xinit/xinitrc ~/.xinitrc
 $ nano .xinitrc
-{
 delete twm, xorg-xclock, xterm lines
 only exec startxfce4 should start
-}
    </div><pre>
 
 startx on login</pre><div>$ nano .bash_profile
@@ -560,13 +541,12 @@ if [ -z "${DISPLAY}" ] && [ "${XDG_VTNR}" -eq 1 ]; then
 fi</div><pre>
 
 autologin into <i>&lt;username&gt;</i></pre><div>$ sudo nano /etc/systemd/system/getty@tty1.service.d/autologin.conf
-{
 Environment=XDG_SESSION_TYPE=x11
 Type=simple
 [Service]
 ExecStart=
 ExecStart=-/sbin/agetty -o '-p -f -- \\u' --noclear --autologin <i>&lt;username&gt;</i> %I $TERM
-}</div><pre>
+</div><pre>
 
 // $ paru librewolf-bin // good browser
 <a href="https://wiki.archlinux.org/title/General_recommendations" rel="noreferrer noopener">General recommendations</a></pre>
